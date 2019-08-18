@@ -37,7 +37,7 @@ function:   Module reset
 parameter:
 Info:
 ******************************************************************************/
-static void ADS1256_reset(void)
+void ADS1256_reset(void)
 {
     DEV_Digital_Write(DEV_RST_PIN, 1);
     DEV_Delay_ms(200);
@@ -52,7 +52,7 @@ parameter:
         Cmd: command
 Info:
 ******************************************************************************/
-static void ADS1256_WriteCmd(UBYTE Cmd)
+void ADS1256_WriteCmd(UBYTE Cmd)
 {
     DEV_Digital_Write(DEV_CS_PIN, 0);
     DEV_SPI_WriteByte(Cmd);
@@ -66,7 +66,7 @@ parameter:
         data: Written data
 Info:
 ******************************************************************************/
-static void ADS1256_WriteReg(UBYTE Reg, UBYTE data)
+void ADS1256_WriteReg(UBYTE Reg, UBYTE data)
 {
     DEV_Digital_Write(DEV_CS_PIN, 0);
     DEV_SPI_WriteByte(CMD_WREG | Reg);
@@ -82,7 +82,7 @@ parameter:
 Info:
     Return the read data
 ******************************************************************************/
-static UBYTE ADS1256_Read_data(UBYTE Reg)
+UBYTE ADS1256_Read_data(UBYTE Reg)
 {
     UBYTE temp = 0;
     DEV_Digital_Write(DEV_CS_PIN, 0);
@@ -100,7 +100,7 @@ parameter:
 Info:
     Timeout indicates that the operation is not working properly.
 ******************************************************************************/
-static void ADS1256_WaitDRDY(void)
+void ADS1256_WaitDRDY()
 {   
     UDOUBLE i = 0;
     for(i=0;i<4000000;i++){
@@ -158,7 +158,7 @@ parameter:
     Channal : Set channel number
 Info:
 ******************************************************************************/
-static void ADS1256_SetChannal(UBYTE Channal)
+void ADS1256_SetChannal(UBYTE Channal)
 {
     if(Channal == CurrentChannal){
         return;
@@ -235,7 +235,7 @@ function:  Read ADC data
 parameter: 
 Info:
 ******************************************************************************/
-static UDOUBLE ADS1256_Read_ADC_Data(void)
+UDOUBLE ADS1256_Read_ADC_Data(void)
 {
     UDOUBLE read = 0;
     UBYTE buf[3] = {0,0,0};

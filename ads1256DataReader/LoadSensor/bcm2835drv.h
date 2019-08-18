@@ -29,8 +29,8 @@
 # THE SOFTWARE.
 #
 ******************************************************************************/
-#ifndef _DEV_CONFIG_H_
-#define _DEV_CONFIG_H_
+#ifndef _BCM2835DRV_H_
+#define _BCM2835DRV_H_
 
 #include <bcm2835.h>
 #include <stdint.h>

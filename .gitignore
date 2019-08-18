@@ -1,2 +1,3 @@
-/bin
+/ads1256DataReader/bin/*
 test*.txt
+__pycache__

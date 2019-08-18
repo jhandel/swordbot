@@ -30,7 +30,7 @@
 #ifndef _ADS1256_H_
 #define _ADS1256_H_
 
-#include "DEV_Config.h"
+#include "bcm2835drv.h"
 
 /* gain channel*/
 typedef enum
@@ -132,4 +132,7 @@ void ADS1256_ConfigADC(ADS1256_GAIN gain, ADS1256_DRATE drate);
 UDOUBLE ADS1256_GetChannalValue(UBYTE Channel);
 void ADS1256_GetAll(UDOUBLE *ADC_Value);
 void ADS1256_GetContinousSingle(UDOUBLE *ADC_Value, UBYTE Channel, int count);
+void ADS1256_WaitDRDY();
+void ADS1256_SetChannal(UBYTE);
+void ADS1256_WriteCmd(UBYTE Cmd);
 #endif
