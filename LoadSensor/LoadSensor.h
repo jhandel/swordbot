@@ -17,10 +17,13 @@ class LoadSensor
             RequestedRead = 0;
             CurrentRead = 0;
             Channel = 1;
+            DEV_ModuleInit();
+            ADS1256_init();
         }
         ~LoadSensor(){
             RequestedRead = 0;
             if(loadSensorThread.joinable()) loadSensorThread.join();
+            DEV_ModuleExit();
         }
 
         void startRead(long,uint8_t);

@@ -30,7 +30,7 @@
 #ifndef _ADS1256_H_
 #define _ADS1256_H_
 
-#include "bcm2835drv.h"
+#include "./../bcm2835drv/bcm2835drv.h"
 
 /* gain channel*/
 typedef enum
@@ -126,7 +126,7 @@ static const uint8_t ADS1256_DRATE_E[ADS1256_DRATE_MAX] =
 
 
 
-UBYTE ADS1256_init(void);
+UBYTE ADS1256_init();
 void ADS1256_SetMode(UBYTE Mode);
 void ADS1256_ConfigADC(ADS1256_GAIN gain, ADS1256_DRATE drate);
 UDOUBLE ADS1256_GetChannalValue(UBYTE Channel);
@@ -135,4 +135,5 @@ void ADS1256_GetContinousSingle(UDOUBLE *ADC_Value, UBYTE Channel, int count);
 void ADS1256_WaitDRDY();
 void ADS1256_SetChannal(UBYTE);
 void ADS1256_WriteCmd(UBYTE Cmd);
+UBYTE ADS1256_ReadChipID();
 #endif

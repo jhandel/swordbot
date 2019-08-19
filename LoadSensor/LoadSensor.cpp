@@ -5,7 +5,7 @@
 #include <thread> 
 #include <chrono>
 #include "ADS1256.h"
-#include "bcm2835drv.h"
+#include "../bcm2835drv/bcm2835drv.h"
 #include "LoadSensor.h"
 
 
@@ -25,11 +25,10 @@ void LoadSensor::startRead(long readCount, uint8_t channel, ADS1256_DRATE drate,
         RequestedRead = readCount;
     }
     Channel = channel;
-    DEV_ModuleInit();
     ADS1256_ConfigADC(gain,drate);
+    DEV_Delay_ms(10);
     loadSensorThread = std::thread([=]() {
         this->processReads();
-        DEV_ModuleExit();
     });
 
 }

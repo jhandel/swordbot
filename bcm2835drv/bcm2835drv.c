@@ -36,6 +36,8 @@ function:	Initialization pin
 parameter:
 Info:
 ******************************************************************************/
+bool initialized = false;
+
 static void DEV_GPIOConfig(void)
 {
     //output
@@ -54,19 +56,22 @@ Info:
 ******************************************************************************/
 UBYTE DEV_ModuleInit(void)
 {
-    if(!bcm2835_init()) {
-        printf("bcm2835 init failed  !!! \r\n");
-        return 1;
-    } else {
-        printf("bcm2835 init success !!! \r\n");
-    }
-	
-	DEV_GPIOConfig();
+    if(!initialized){
+        if(!bcm2835_init()) {
+            printf("bcm2835 init failed  !!! \r\n");
+            return 1;
+        } else {
+            printf("bcm2835 init success !!! \r\n");
+        }
+        
+        DEV_GPIOConfig();
 
-    bcm2835_spi_begin();                                         //Start spi interface, set spi pin for the reuse function
-    bcm2835_spi_setBitOrder(BCM2835_SPI_BIT_ORDER_MSBFIRST);     //High first transmission
-    bcm2835_spi_setDataMode(BCM2835_SPI_MODE1);                  //spi mode 0
-    bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);  //Frequency
+        bcm2835_spi_begin();                                         //Start spi interface, set spi pin for the reuse function
+        bcm2835_spi_setBitOrder(BCM2835_SPI_BIT_ORDER_MSBFIRST);     //High first transmission
+        bcm2835_spi_setDataMode(BCM2835_SPI_MODE1);                  //spi mode 0
+        bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);  //Frequency
+        initialized = true;
+    }
     return 0;
 }
 
@@ -77,6 +82,9 @@ Info:
 ******************************************************************************/
 void DEV_ModuleExit(void)
 {
-    bcm2835_spi_end();
-    bcm2835_close();
+    if(initialized){
+        bcm2835_spi_end();
+        bcm2835_close();
+        initialized = false;
+    }
 }

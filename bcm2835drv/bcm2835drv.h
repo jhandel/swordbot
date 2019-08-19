@@ -55,6 +55,7 @@
 **/
 #define DEV_Digital_Write(_pin, _value) bcm2835_gpio_write(_pin, _value)
 #define DEV_Digital_Read(_pin) bcm2835_gpio_lev(_pin)
+#define DEV_pin_config(_pin, _use) bcm2835_gpio_fsel(_pin, _use) 
 
 /**
  * SPI

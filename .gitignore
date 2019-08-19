@@ -1,3 +1,5 @@
-/ads1256DataReader/bin/*
+bin/*
 test*.txt
 __pycache__
+
+!placeholder.txt

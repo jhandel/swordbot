@@ -2659,18 +2659,19 @@ SWIGINTERN PyObject *SWIG_PyStaticMethod_New(PyObject *SWIGUNUSEDPARM(self), PyO
 
 #define SWIGTYPE_p_ADS1256_DRATE swig_types[0]
 #define SWIGTYPE_p_ADS1256_GAIN swig_types[1]
-#define SWIGTYPE_p_LoadSensor swig_types[2]
-#define SWIGTYPE_p_char swig_types[3]
-#define SWIGTYPE_p_int swig_types[4]
-#define SWIGTYPE_p_long_long swig_types[5]
-#define SWIGTYPE_p_short swig_types[6]
-#define SWIGTYPE_p_signed_char swig_types[7]
-#define SWIGTYPE_p_unsigned_char swig_types[8]
-#define SWIGTYPE_p_unsigned_int swig_types[9]
-#define SWIGTYPE_p_unsigned_long_long swig_types[10]
-#define SWIGTYPE_p_unsigned_short swig_types[11]
-static swig_type_info *swig_types[13];
-static swig_module_info swig_module = {swig_types, 12, 0, 0, 0, 0};
+#define SWIGTYPE_p_ClearPathMotorSD swig_types[2]
+#define SWIGTYPE_p_LoadSensor swig_types[3]
+#define SWIGTYPE_p_char swig_types[4]
+#define SWIGTYPE_p_int swig_types[5]
+#define SWIGTYPE_p_long_long swig_types[6]
+#define SWIGTYPE_p_short swig_types[7]
+#define SWIGTYPE_p_signed_char swig_types[8]
+#define SWIGTYPE_p_unsigned_char swig_types[9]
+#define SWIGTYPE_p_unsigned_int swig_types[10]
+#define SWIGTYPE_p_unsigned_long_long swig_types[11]
+#define SWIGTYPE_p_unsigned_short swig_types[12]
+static swig_type_info *swig_types[14];
+static swig_module_info swig_module = {swig_types, 13, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -2682,16 +2683,16 @@ static swig_module_info swig_module = {swig_types, 12, 0, 0, 0, 0};
 #define SWIG_TypeQuery SWIG_Python_TypeQuery
 
 /*-----------------------------------------------
-              @(target):= _LoadSensor.so
+              @(target):= _Devices.so
   ------------------------------------------------*/
 #if PY_VERSION_HEX >= 0x03000000
-#  define SWIG_init    PyInit__LoadSensor
+#  define SWIG_init    PyInit__Devices
 
 #else
-#  define SWIG_init    init_LoadSensor
+#  define SWIG_init    init_Devices
 
 #endif
-#define SWIG_name    "_LoadSensor"
+#define SWIG_name    "_Devices"
 
 #define SWIGVERSION 0x040000 
 #define SWIG_VERSION SWIGVERSION
@@ -2774,10 +2775,22 @@ namespace swig {
 }
 
  
-    #include "LoadSensor.h" 
+    /* Every thing in this file is being copied in  
+     wrapper file. We include the C header file necessary 
+     to compile the interface */
+    #include "./../ClearPathMotorSD/ClearPathMotorSD.h" 
+    #include "./../LoadSensor/LoadSensor.h" 
 
 
-#include <stdint.h>		// Use the C99 official header
+
+#include <limits.h>
+#if !defined(SWIG_NO_LLONG_MAX)
+# if !defined(LLONG_MAX) && defined(__GNUC__) && defined (__LONG_LONG_MAX__)
+#   define LLONG_MAX __LONG_LONG_MAX__
+#   define LLONG_MIN (-LLONG_MAX - 1LL)
+#   define ULLONG_MAX (LLONG_MAX * 2ULL + 1ULL)
+# endif
+#endif
 
 
 SWIGINTERN int
@@ -2905,14 +2918,30 @@ SWIG_AsVal_long (PyObject *obj, long* val)
 }
 
 
-#include <limits.h>
-#if !defined(SWIG_NO_LLONG_MAX)
-# if !defined(LLONG_MAX) && defined(__GNUC__) && defined (__LONG_LONG_MAX__)
-#   define LLONG_MAX __LONG_LONG_MAX__
-#   define LLONG_MIN (-LLONG_MAX - 1LL)
-#   define ULLONG_MAX (LLONG_MAX * 2ULL + 1ULL)
-# endif
-#endif
+SWIGINTERN int
+SWIG_AsVal_int (PyObject * obj, int *val)
+{
+  long v;
+  int res = SWIG_AsVal_long (obj, &v);
+  if (SWIG_IsOK(res)) {
+    if ((v < INT_MIN || v > INT_MAX)) {
+      return SWIG_OverflowError;
+    } else {
+      if (val) *val = static_cast< int >(v);
+    }
+  }  
+  return res;
+}
+
+
+SWIGINTERNINLINE PyObject*
+  SWIG_From_bool  (bool value)
+{
+  return PyBool_FromLong(value ? 1 : 0);
+}
+
+
+  #define SWIG_From_long   PyInt_FromLong 
 
 
 SWIGINTERN int
@@ -2979,23 +3008,6 @@ SWIG_AsVal_unsigned_SS_char (PyObject * obj, unsigned char *val)
 }
 
 
-SWIGINTERNINLINE PyObject*
-  SWIG_From_bool  (bool value)
-{
-  return PyBool_FromLong(value ? 1 : 0);
-}
-
-
-SWIGINTERNINLINE PyObject*
-  SWIG_From_unsigned_SS_int  (unsigned int value)
-{
-  return PyInt_FromSize_t((size_t) value);
-}
-
-
-  #define SWIG_From_long   PyInt_FromLong 
-
-
 SWIGINTERNINLINE PyObject* 
 SWIG_From_unsigned_SS_long  (unsigned long value)
 {
@@ -3010,9 +3022,1015 @@ SWIG_From_unsigned_SS_char  (unsigned char value)
   return SWIG_From_unsigned_SS_long  (value);
 }
 
+
+SWIGINTERN int
+SWIG_AsVal_bool (PyObject *obj, bool *val)
+{
+  int r;
+  if (!PyBool_Check(obj))
+    return SWIG_ERROR;
+  r = PyObject_IsTrue(obj);
+  if (r == -1)
+    return SWIG_ERROR;
+  if (val) *val = r ? true : false;
+  return SWIG_OK;
+}
+
+
+SWIGINTERNINLINE PyObject*
+  SWIG_From_int  (int value)
+{
+  return PyInt_FromLong((long) value);
+}
+
+
+SWIGINTERNINLINE PyObject*
+  SWIG_From_unsigned_SS_int  (unsigned int value)
+{
+  return PyInt_FromSize_t((size_t) value);
+}
+
+
+#include <stdint.h>		// Use the C99 official header
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+SWIGINTERN PyObject *_wrap_new_ClearPathMotorSD(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *result = 0 ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "new_ClearPathMotorSD", 0, 0, 0)) SWIG_fail;
+  result = (ClearPathMotorSD *)new ClearPathMotorSD();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_ClearPathMotorSD, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_ClearPathMotorSD(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_ClearPathMotorSD" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_attach__SWIG_0(PyObject *SWIGUNUSEDPARM(self), Py_ssize_t nobjs, PyObject **swig_obj) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  
+  if ((nobjs < 2) || (nobjs > 2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_attach" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  ecode2 = SWIG_AsVal_int(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_attach" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  (arg1)->attach(arg2);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_attach__SWIG_1(PyObject *SWIGUNUSEDPARM(self), Py_ssize_t nobjs, PyObject **swig_obj) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  
+  if ((nobjs < 3) || (nobjs > 3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_attach" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  ecode2 = SWIG_AsVal_int(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_attach" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(swig_obj[2], &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "ClearPathMotorSD_attach" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  (arg1)->attach(arg2,arg3);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_attach__SWIG_2(PyObject *SWIGUNUSEDPARM(self), Py_ssize_t nobjs, PyObject **swig_obj) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  
+  if ((nobjs < 4) || (nobjs > 4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_attach" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  ecode2 = SWIG_AsVal_int(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_attach" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(swig_obj[2], &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "ClearPathMotorSD_attach" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(swig_obj[3], &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "ClearPathMotorSD_attach" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  (arg1)->attach(arg2,arg3,arg4);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_attach__SWIG_3(PyObject *SWIGUNUSEDPARM(self), Py_ssize_t nobjs, PyObject **swig_obj) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  int arg5 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  
+  if ((nobjs < 5) || (nobjs > 5)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_attach" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  ecode2 = SWIG_AsVal_int(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_attach" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(swig_obj[2], &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "ClearPathMotorSD_attach" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(swig_obj[3], &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "ClearPathMotorSD_attach" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  ecode5 = SWIG_AsVal_int(swig_obj[4], &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "ClearPathMotorSD_attach" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  (arg1)->attach(arg2,arg3,arg4,arg5);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_attach(PyObject *self, PyObject *args) {
+  Py_ssize_t argc;
+  PyObject *argv[6] = {
+    0
+  };
+  
+  if (!(argc = SWIG_Python_UnpackTuple(args, "ClearPathMotorSD_attach", 0, 5, argv))) SWIG_fail;
+  --argc;
+  if (argc == 2) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_ClearPathMotorSD, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_int(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        return _wrap_ClearPathMotorSD_attach__SWIG_0(self, argc, argv);
+      }
+    }
+  }
+  if (argc == 3) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_ClearPathMotorSD, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_int(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        {
+          int res = SWIG_AsVal_int(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          return _wrap_ClearPathMotorSD_attach__SWIG_1(self, argc, argv);
+        }
+      }
+    }
+  }
+  if (argc == 4) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_ClearPathMotorSD, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_int(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        {
+          int res = SWIG_AsVal_int(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_int(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            return _wrap_ClearPathMotorSD_attach__SWIG_2(self, argc, argv);
+          }
+        }
+      }
+    }
+  }
+  if (argc == 5) {
+    int _v;
+    void *vptr = 0;
+    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_ClearPathMotorSD, 0);
+    _v = SWIG_CheckState(res);
+    if (_v) {
+      {
+        int res = SWIG_AsVal_int(argv[1], NULL);
+        _v = SWIG_CheckState(res);
+      }
+      if (_v) {
+        {
+          int res = SWIG_AsVal_int(argv[2], NULL);
+          _v = SWIG_CheckState(res);
+        }
+        if (_v) {
+          {
+            int res = SWIG_AsVal_int(argv[3], NULL);
+            _v = SWIG_CheckState(res);
+          }
+          if (_v) {
+            {
+              int res = SWIG_AsVal_int(argv[4], NULL);
+              _v = SWIG_CheckState(res);
+            }
+            if (_v) {
+              return _wrap_ClearPathMotorSD_attach__SWIG_3(self, argc, argv);
+            }
+          }
+        }
+      }
+    }
+  }
+  
+fail:
+  SWIG_Python_RaiseOrModifyTypeError("Wrong number or type of arguments for overloaded function 'ClearPathMotorSD_attach'.\n"
+    "  Possible C/C++ prototypes are:\n"
+    "    ClearPathMotorSD::attach(int)\n"
+    "    ClearPathMotorSD::attach(int,int)\n"
+    "    ClearPathMotorSD::attach(int,int,int)\n"
+    "    ClearPathMotorSD::attach(int,int,int,int)\n");
+  return 0;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_moveInMM(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  long arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject *swig_obj[3] ;
+  bool result;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ClearPathMotorSD_moveInMM", 3, 3, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_moveInMM" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  ecode2 = SWIG_AsVal_long(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_moveInMM" "', argument " "2"" of type '" "long""'");
+  } 
+  arg2 = static_cast< long >(val2);
+  ecode3 = SWIG_AsVal_int(swig_obj[2], &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "ClearPathMotorSD_moveInMM" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  result = (bool)(arg1)->moveInMM(arg2,arg3);
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_enable(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_enable" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  (arg1)->enable();
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_getCommandedPosition(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  long result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_getCommandedPosition" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  result = (long)(arg1)->getCommandedPosition();
+  resultobj = SWIG_From_long(static_cast< long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_readHLFB(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  bool result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_readHLFB" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  result = (bool)(arg1)->readHLFB();
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_stopMove(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_stopMove" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  (arg1)->stopMove();
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_stepsPer100mm(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  double arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ClearPathMotorSD_stepsPer100mm", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_stepsPer100mm" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  ecode2 = SWIG_AsVal_double(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_stepsPer100mm" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  (arg1)->stepsPer100mm(arg2);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_setMaxVelInMM(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ClearPathMotorSD_setMaxVelInMM", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_setMaxVelInMM" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  ecode2 = SWIG_AsVal_long(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_setMaxVelInMM" "', argument " "2"" of type '" "long""'");
+  } 
+  arg2 = static_cast< long >(val2);
+  (arg1)->setMaxVelInMM(arg2);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_setAccelInMM(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ClearPathMotorSD_setAccelInMM", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_setAccelInMM" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  ecode2 = SWIG_AsVal_long(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_setAccelInMM" "', argument " "2"" of type '" "long""'");
+  } 
+  arg2 = static_cast< long >(val2);
+  (arg1)->setAccelInMM(arg2);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_setDeccelInMM(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ClearPathMotorSD_setDeccelInMM", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_setDeccelInMM" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  ecode2 = SWIG_AsVal_long(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_setDeccelInMM" "', argument " "2"" of type '" "long""'");
+  } 
+  arg2 = static_cast< long >(val2);
+  (arg1)->setDeccelInMM(arg2);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_commandDone(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  bool result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_commandDone" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  result = (bool)(arg1)->commandDone();
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_disable(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_disable" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  (arg1)->disable();
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_PinA_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  uint8_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned char val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ClearPathMotorSD_PinA_set", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_PinA_set" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  ecode2 = SWIG_AsVal_unsigned_SS_char(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_PinA_set" "', argument " "2"" of type '" "uint8_t""'");
+  } 
+  arg2 = static_cast< uint8_t >(val2);
+  if (arg1) (arg1)->PinA = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_PinA_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  uint8_t result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_PinA_get" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  result = (uint8_t) ((arg1)->PinA);
+  resultobj = SWIG_From_unsigned_SS_char(static_cast< unsigned char >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_PinB_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  uint8_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned char val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ClearPathMotorSD_PinB_set", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_PinB_set" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  ecode2 = SWIG_AsVal_unsigned_SS_char(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_PinB_set" "', argument " "2"" of type '" "uint8_t""'");
+  } 
+  arg2 = static_cast< uint8_t >(val2);
+  if (arg1) (arg1)->PinB = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_PinB_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  uint8_t result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_PinB_get" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  result = (uint8_t) ((arg1)->PinB);
+  resultobj = SWIG_From_unsigned_SS_char(static_cast< unsigned char >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_PinE_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  uint8_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned char val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ClearPathMotorSD_PinE_set", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_PinE_set" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  ecode2 = SWIG_AsVal_unsigned_SS_char(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_PinE_set" "', argument " "2"" of type '" "uint8_t""'");
+  } 
+  arg2 = static_cast< uint8_t >(val2);
+  if (arg1) (arg1)->PinE = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_PinE_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  uint8_t result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_PinE_get" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  result = (uint8_t) ((arg1)->PinE);
+  resultobj = SWIG_From_unsigned_SS_char(static_cast< unsigned char >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_PinH_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  uint8_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned char val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ClearPathMotorSD_PinH_set", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_PinH_set" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  ecode2 = SWIG_AsVal_unsigned_SS_char(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_PinH_set" "', argument " "2"" of type '" "uint8_t""'");
+  } 
+  arg2 = static_cast< uint8_t >(val2);
+  if (arg1) (arg1)->PinH = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_PinH_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  uint8_t result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_PinH_get" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  result = (uint8_t) ((arg1)->PinH);
+  resultobj = SWIG_From_unsigned_SS_char(static_cast< unsigned char >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_Enabled_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  bool arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  bool val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ClearPathMotorSD_Enabled_set", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_Enabled_set" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  ecode2 = SWIG_AsVal_bool(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_Enabled_set" "', argument " "2"" of type '" "bool""'");
+  } 
+  arg2 = static_cast< bool >(val2);
+  if (arg1) (arg1)->Enabled = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_Enabled_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  bool result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_Enabled_get" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  result = (bool) ((arg1)->Enabled);
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_moveStateX_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  int arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ClearPathMotorSD_moveStateX_set", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_moveStateX_set" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  ecode2 = SWIG_AsVal_int(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_moveStateX_set" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  if (arg1) (arg1)->moveStateX = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_moveStateX_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  int result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_moveStateX_get" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  result = (int) ((arg1)->moveStateX);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_AbsPosition_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ClearPathMotorSD_AbsPosition_set", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_AbsPosition_set" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  ecode2 = SWIG_AsVal_long(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_AbsPosition_set" "', argument " "2"" of type '" "long""'");
+  } 
+  arg2 = static_cast< long >(val2);
+  if (arg1) (arg1)->AbsPosition = (long volatile )arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_AbsPosition_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  long result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_AbsPosition_get" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  result = (long)(long) ((arg1)->AbsPosition);
+  resultobj = SWIG_From_long(static_cast< long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *ClearPathMotorSD_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!SWIG_Python_UnpackTuple(args, "swigregister", 1, 1, &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_ClearPathMotorSD, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *ClearPathMotorSD_swiginit(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  return SWIG_Python_InitShadowInstance(args);
+}
+
 SWIGINTERN PyObject *_wrap_new_LoadSensor(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   LoadSensor *result = 0 ;
@@ -3714,6 +4732,36 @@ SWIGINTERN PyObject *LoadSensor_swiginit(PyObject *SWIGUNUSEDPARM(self), PyObjec
 
 static PyMethodDef SwigMethods[] = {
 	 { "SWIG_PyInstanceMethod_New", SWIG_PyInstanceMethod_New, METH_O, NULL},
+	 { "new_ClearPathMotorSD", _wrap_new_ClearPathMotorSD, METH_NOARGS, NULL},
+	 { "delete_ClearPathMotorSD", _wrap_delete_ClearPathMotorSD, METH_O, NULL},
+	 { "ClearPathMotorSD_attach", _wrap_ClearPathMotorSD_attach, METH_VARARGS, NULL},
+	 { "ClearPathMotorSD_moveInMM", _wrap_ClearPathMotorSD_moveInMM, METH_VARARGS, NULL},
+	 { "ClearPathMotorSD_enable", _wrap_ClearPathMotorSD_enable, METH_O, NULL},
+	 { "ClearPathMotorSD_getCommandedPosition", _wrap_ClearPathMotorSD_getCommandedPosition, METH_O, NULL},
+	 { "ClearPathMotorSD_readHLFB", _wrap_ClearPathMotorSD_readHLFB, METH_O, NULL},
+	 { "ClearPathMotorSD_stopMove", _wrap_ClearPathMotorSD_stopMove, METH_O, NULL},
+	 { "ClearPathMotorSD_stepsPer100mm", _wrap_ClearPathMotorSD_stepsPer100mm, METH_VARARGS, NULL},
+	 { "ClearPathMotorSD_setMaxVelInMM", _wrap_ClearPathMotorSD_setMaxVelInMM, METH_VARARGS, NULL},
+	 { "ClearPathMotorSD_setAccelInMM", _wrap_ClearPathMotorSD_setAccelInMM, METH_VARARGS, NULL},
+	 { "ClearPathMotorSD_setDeccelInMM", _wrap_ClearPathMotorSD_setDeccelInMM, METH_VARARGS, NULL},
+	 { "ClearPathMotorSD_commandDone", _wrap_ClearPathMotorSD_commandDone, METH_O, NULL},
+	 { "ClearPathMotorSD_disable", _wrap_ClearPathMotorSD_disable, METH_O, NULL},
+	 { "ClearPathMotorSD_PinA_set", _wrap_ClearPathMotorSD_PinA_set, METH_VARARGS, NULL},
+	 { "ClearPathMotorSD_PinA_get", _wrap_ClearPathMotorSD_PinA_get, METH_O, NULL},
+	 { "ClearPathMotorSD_PinB_set", _wrap_ClearPathMotorSD_PinB_set, METH_VARARGS, NULL},
+	 { "ClearPathMotorSD_PinB_get", _wrap_ClearPathMotorSD_PinB_get, METH_O, NULL},
+	 { "ClearPathMotorSD_PinE_set", _wrap_ClearPathMotorSD_PinE_set, METH_VARARGS, NULL},
+	 { "ClearPathMotorSD_PinE_get", _wrap_ClearPathMotorSD_PinE_get, METH_O, NULL},
+	 { "ClearPathMotorSD_PinH_set", _wrap_ClearPathMotorSD_PinH_set, METH_VARARGS, NULL},
+	 { "ClearPathMotorSD_PinH_get", _wrap_ClearPathMotorSD_PinH_get, METH_O, NULL},
+	 { "ClearPathMotorSD_Enabled_set", _wrap_ClearPathMotorSD_Enabled_set, METH_VARARGS, NULL},
+	 { "ClearPathMotorSD_Enabled_get", _wrap_ClearPathMotorSD_Enabled_get, METH_O, NULL},
+	 { "ClearPathMotorSD_moveStateX_set", _wrap_ClearPathMotorSD_moveStateX_set, METH_VARARGS, NULL},
+	 { "ClearPathMotorSD_moveStateX_get", _wrap_ClearPathMotorSD_moveStateX_get, METH_O, NULL},
+	 { "ClearPathMotorSD_AbsPosition_set", _wrap_ClearPathMotorSD_AbsPosition_set, METH_VARARGS, NULL},
+	 { "ClearPathMotorSD_AbsPosition_get", _wrap_ClearPathMotorSD_AbsPosition_get, METH_O, NULL},
+	 { "ClearPathMotorSD_swigregister", ClearPathMotorSD_swigregister, METH_O, NULL},
+	 { "ClearPathMotorSD_swiginit", ClearPathMotorSD_swiginit, METH_VARARGS, NULL},
 	 { "new_LoadSensor", _wrap_new_LoadSensor, METH_NOARGS, NULL},
 	 { "delete_LoadSensor", _wrap_delete_LoadSensor, METH_O, NULL},
 	 { "LoadSensor_startRead", _wrap_LoadSensor_startRead, METH_VARARGS, NULL},
@@ -3746,6 +4794,7 @@ static PyMethodDef SwigMethods_proxydocs[] = {
 
 static swig_type_info _swigt__p_ADS1256_DRATE = {"_p_ADS1256_DRATE", "ADS1256_DRATE *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_ADS1256_GAIN = {"_p_ADS1256_GAIN", "ADS1256_GAIN *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_ClearPathMotorSD = {"_p_ClearPathMotorSD", "ClearPathMotorSD *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_LoadSensor = {"_p_LoadSensor", "LoadSensor *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_int = {"_p_int", "intptr_t *|int *|int_least32_t *|int_fast32_t *|int32_t *|int_fast16_t *", 0, 0, (void*)0, 0};
@@ -3760,6 +4809,7 @@ static swig_type_info _swigt__p_unsigned_short = {"_p_unsigned_short", "unsigned
 static swig_type_info *swig_type_initial[] = {
   &_swigt__p_ADS1256_DRATE,
   &_swigt__p_ADS1256_GAIN,
+  &_swigt__p_ClearPathMotorSD,
   &_swigt__p_LoadSensor,
   &_swigt__p_char,
   &_swigt__p_int,
@@ -3774,6 +4824,7 @@ static swig_type_info *swig_type_initial[] = {
 
 static swig_cast_info _swigc__p_ADS1256_DRATE[] = {  {&_swigt__p_ADS1256_DRATE, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_ADS1256_GAIN[] = {  {&_swigt__p_ADS1256_GAIN, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_ClearPathMotorSD[] = {  {&_swigt__p_ClearPathMotorSD, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_LoadSensor[] = {  {&_swigt__p_LoadSensor, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_int[] = {  {&_swigt__p_int, 0, 0, 0},{0, 0, 0, 0}};
@@ -3788,6 +4839,7 @@ static swig_cast_info _swigc__p_unsigned_short[] = {  {&_swigt__p_unsigned_short
 static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_ADS1256_DRATE,
   _swigc__p_ADS1256_GAIN,
+  _swigc__p_ClearPathMotorSD,
   _swigc__p_LoadSensor,
   _swigc__p_char,
   _swigc__p_int,

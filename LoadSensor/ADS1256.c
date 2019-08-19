@@ -121,7 +121,9 @@ UBYTE ADS1256_ReadChipID(void)
 {
     UBYTE id;
     ADS1256_WaitDRDY();
+    DEV_Digital_Write(DEV_CS_PIN, 0);
     id = ADS1256_Read_data(REG_STATUS);
+    DEV_Digital_Write(DEV_CS_PIN, 1);
     return id>>4;
 }
 
@@ -140,6 +142,7 @@ void ADS1256_ConfigADC(ADS1256_GAIN gain, ADS1256_DRATE drate)
     buf[1] = 0x08;
     buf[2] = (0<<5) | (0<<3) | (gain<<0);
     buf[3] = ADS1256_DRATE_E[drate];
+
     DEV_Digital_Write(DEV_CS_PIN, 0);
     DEV_SPI_WriteByte(CMD_WREG | 0);
     DEV_SPI_WriteByte(0x03);
@@ -216,14 +219,21 @@ Info:
 UBYTE ADS1256_init(void)
 {
     ADS1256_reset();
-    DEV_Delay_us(13);
+    DEV_Delay_us(10);
+    DEV_Digital_Write(DEV_CS_PIN, 0);
+    ADS1256_WriteCmd(CMD_SYNC);
+    DEV_Delay_us(10);
+    ADS1256_WriteCmd(CMD_WAKEUP);
+    DEV_Delay_us(10);
+    DEV_Delay_ms(13);
     DEV_SPI_WriteByte(CMD_SDATAC);
-    DEV_Delay_us(13);
+    DEV_Delay_ms(13);
+    DEV_Digital_Write(DEV_CS_PIN, 1);
     if(ADS1256_ReadChipID() == 3){
         printf("ID Read success \r\n");
     }
     else{
-        printf("ID Read failed \r\n");
+        printf("ID Read failed\r\n");
         return 1;
     }
     ADS1256_ConfigADC(ADS1256_GAIN_1, ADS1256_15SPS);
