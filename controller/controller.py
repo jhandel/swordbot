@@ -1,10 +1,12 @@
 #!/usr/bin/python3
 import os
 import sys
-from Devices import ClearPathMotorSD
-from Devices import LoadSensor
-from Devices import Switch
-from Devices import SwitchCallback
+import time
+import json
+from libs.Devices import ClearPathMotorSD
+from libs.Devices import LoadSensor
+from libs.Devices import Switch
+from libs.Devices import SwitchCallback
 import tkinter as tk
 from tkinter import Tk as ThemedTk
 from tkinter import ttk
@@ -13,68 +15,9 @@ from ttkwidgets import ScaleEntry
 from ttkwidgets.autocomplete import AutocompleteCombobox
 from tkinter import messagebox
 from PIL import Image
-import time
-import json
-from pynput.keyboard import Key, Controller
-
-class LimitHandler(SwitchCallback):
-    def __init__(self, fn):
-        SwitchCallback.__init__(self)
-        self.callbackFunc = fn
-    def run(self):
-        self.callbackFunc()
-
-class Settings():
-    def __init__(self, path):
-        self.Path = path
-        if(os.path.isfile(self.Path)):
-            with open(self.Path) as json_data_file:
-                self.settings = json.load(json_data_file)
-        else:
-            self.settings = {
-            "acceleration" : "2500",
-            "maxDistance" : "800",
-            "stepsPer100MM" : "1000",
-            "Speed" : "2000",
-            "homeSpeed" : "10",
-            "targetZero" : "600",
-            "targetPen" : "6.35",
-            "retract" : "100",
-            "retractSpeed" : "1000"
-            }
-            self.save()
-        self.settings["homed"] = "false"
-
-    def save(self):
-            with open(self.Path, 'w') as outfile:
-                json.dump(self.settings, outfile)
-    
-    def getValue(self, key):
-        val = self.settings[key]
-        if(key == "homed"):
-            return val == "true"
-        else:
-            return float(val)
-
-    def setValue(self, key, value):
-        if(key == "homed"):
-            if(value == True):
-                self.settings["homed"] == "true"
-            else:
-                self.settings["homed"] == "false"
-        else:
-            self.settings[key] = str(value)
-    
-
-
-class Machine():
-    def __init__(self, motor, sensor):
-        self.Motor = motor
-        self.Sensor = sensor
-    def Stop(self):
-        "stopping things"
-        self.Motor.stopMove()
-        self.Sensor.stopRead()
+from libs.settings import Settings
+from libs.machine import LimitHandler
+from libs.machine import Machine
 
 class MainWindow(ThemedTk):
     def __init__(self, settings):
@@ -118,9 +61,9 @@ class MainWindow(ThemedTk):
         except ValueError:
            return False
 
-    def setCurrentFocusElement(self, element):
-        self.currentVar = element
-        print("focus set")
+    def setCurrentFocusElement(self, element, valvar):
+        element.select_range(0, len(valvar.get()))
+        self.currentVar = valvar
 
     def numPadCallback(self, key):
         val = self.currentVar.get()
@@ -148,33 +91,33 @@ class MainWindow(ThemedTk):
         self.stepsLabel.grid(row=1, column=0,sticky="e")
         self.stepsVar = tk.StringVar()
         self.stepsVar.set(self.settings.getValue("stepsPer100MM"))
-        self.stepsEntry = ttk.Entry(self.configFrame, width=35, validate='key', validatecommand=self.vcmd, textvariable=self.stepsVar)
+        self.stepsEntry = ttk.Entry(self.configFrame, width=35, font=('Helvetica', 17), validate='key', validatecommand=self.vcmd, textvariable=self.stepsVar)
         self.stepsEntry.grid(row=1, column=1,sticky="w")
-        self.stepsEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.stepsVar))
+        self.stepsEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.stepsEntry, self.stepsVar))
 
         self.accelLabel = ttk.Label(self.configFrame, text="Acceleration(mm/s^2)",  anchor=tk.E)
         self.accelLabel.grid(row=2, column=0,sticky="e")
         self.accelVar = tk.StringVar()
         self.accelVar.set(self.settings.getValue("acceleration"))
-        self.accelEntry = ttk.Entry(self.configFrame, width=35, validate='key', validatecommand=self.vcmd, textvariable=self.accelVar)
+        self.accelEntry = ttk.Entry(self.configFrame, width=35, font=('Helvetica', 17), validate='key', validatecommand=self.vcmd, textvariable=self.accelVar)
         self.accelEntry.grid(row=2, column=1,sticky="w")
-        self.accelEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.accelVar))
+        self.accelEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.accelEntry, self.accelVar))
 
         self.limitLabel = ttk.Label(self.configFrame, text="Thrust Limit(mm)",  anchor=tk.E)
         self.limitLabel.grid(row=3, column=0,sticky="e")
         self.limitVar = tk.StringVar()
         self.limitVar.set(self.settings.getValue("maxDistance"))
-        self.limitEntry = ttk.Entry(self.configFrame, width=35, validate='key', validatecommand=self.vcmd, textvariable=self.limitVar)
+        self.limitEntry = ttk.Entry(self.configFrame, width=35, font=('Helvetica', 17), validate='key', validatecommand=self.vcmd, textvariable=self.limitVar)
         self.limitEntry.grid(row=3, column=1,sticky="w")
-        self.limitEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.limitVar))
+        self.limitEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.limitEntry, self.limitVar))
 
         self.thrustSpeedLabel = ttk.Label(self.configFrame, text="Thrust Speed(mm/s)",  anchor=tk.E)
         self.thrustSpeedLabel.grid(row=4, column=0,sticky="e")
         self.thrustSpeedVar = tk.StringVar()
         self.thrustSpeedVar.set(self.settings.getValue("Speed"))
-        self.thrustSpeedEntry = ttk.Entry(self.configFrame, width=35, validate='key', validatecommand=self.vcmd, textvariable=self.thrustSpeedVar)
+        self.thrustSpeedEntry = ttk.Entry(self.configFrame, width=35, font=('Helvetica', 17), validate='key', validatecommand=self.vcmd, textvariable=self.thrustSpeedVar)
         self.thrustSpeedEntry.grid(row=4, column=1,sticky="w")
-        self.thrustSpeedEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.thrustSpeedVar))
+        self.thrustSpeedEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.thrustSpeedEntry, self.thrustSpeedVar))
 
         self.homeSpeedLabel = ttk.Label(self.configFrame, text="Home Speed(mm/s)",  anchor=tk.E)
         self.homeSpeedLabel.grid(row=5, column=0,sticky="e")
@@ -182,7 +125,7 @@ class MainWindow(ThemedTk):
         self.homeSpeedVar.set(self.settings.getValue("homeSpeed"))
         self.homeSpeedEntry = ttk.Entry(self.configFrame, width=35, validate='key', validatecommand=self.vcmd, textvariable=self.homeSpeedVar)
         self.homeSpeedEntry.grid(row=5, column=1,sticky="w")
-        self.homeSpeedEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.homeSpeedVar))
+        self.homeSpeedEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.homeSpeedEntry, self.homeSpeedVar))
 
         self.surfaceLabel = ttk.Label(self.configFrame, text="Target Surface(mm)",  anchor=tk.E)
         self.surfaceLabel.grid(row=6, column=0,sticky="e")
@@ -190,7 +133,7 @@ class MainWindow(ThemedTk):
         self.surfaceVar.set(self.settings.getValue("targetZero"))
         self.surfaceEntry = ttk.Entry(self.configFrame, width=35, validate='key', validatecommand=self.vcmd, textvariable=self.surfaceVar)
         self.surfaceEntry.grid(row=6, column=1,sticky="w")
-        self.surfaceEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.surfaceVar))
+        self.surfaceEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.surfaceEntry, self.surfaceVar))
 
         self.penLabel = ttk.Label(self.configFrame, text="Target Penetration(mm)",  anchor=tk.E)
         self.penLabel.grid(row=7, column=0,sticky="e")
@@ -198,7 +141,7 @@ class MainWindow(ThemedTk):
         self.penVar.set(self.settings.getValue("targetPen"))
         self.penEntry = ttk.Entry(self.configFrame, width=35, validate='key', validatecommand=self.vcmd, textvariable=self.penVar)
         self.penEntry.grid(row=7, column=1,sticky="w")
-        self.penEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.penVar))
+        self.penEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.penEntry, self.penVar))
 
         self.retractLabel = ttk.Label(self.configFrame, text="Retraction (mm)",  anchor=tk.E)
         self.retractLabel.grid(row=8, column=0,sticky="e")
@@ -206,7 +149,7 @@ class MainWindow(ThemedTk):
         self.retractVar.set(self.settings.getValue("retract"))
         self.retractEntry = ttk.Entry(self.configFrame, width=35, validate='key', validatecommand=self.vcmd, textvariable=self.retractVar)
         self.retractEntry.grid(row=8, column=1,sticky="w")
-        self.retractEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.retractVar))
+        self.retractEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.retractEntry, self.retractVar))
 
         self.retractSpeedLabel = ttk.Label(self.configFrame, text="Retraction Speed(mm/s)",  anchor=tk.E)
         self.retractSpeedLabel.grid(row=9, column=0,sticky="e")
@@ -214,7 +157,7 @@ class MainWindow(ThemedTk):
         self.retractSpeedVar.set(self.settings.getValue("retractSpeed"))
         self.retractSpeedEntry = ttk.Entry(self.configFrame, width=35, validate='key', validatecommand=self.vcmd, textvariable=self.retractSpeedVar)
         self.retractSpeedEntry.grid(row=9, column=1,sticky="w")
-        self.retractSpeedEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.retractSpeedVar))
+        self.retractSpeedEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.retractSpeedEntry, self.retractSpeedVar))
 
         self.saveSettingsBtn = ttk.Button(self.configFrame, text="Save Config",command=self.saveConfig)
         self.saveSettingsBtn.grid(row=10, column=0, columnspan=3, sticky="nsew")
@@ -268,7 +211,12 @@ class MainWindow(ThemedTk):
     def setStyles(self):
         style = ttk.Style(self)
         style.configure('TButton',
-                        padding=20,
+                        padding=10,
+                        font=('Helvetica', 17),
+                        anchor=tk.CENTER
+                        )
+        style.configure('TEntry',
+                        padding=11,
                         )
 
 ##Events
