@@ -107,7 +107,6 @@ void ADS1256_WaitDRDY()
         if(DEV_Digital_Read(DEV_DRDY_PIN) == 0){
            break;
         }
-        printf("read ...\r\n"); 
     }
     if(i >= 4000000){
        printf("Time Out ...\r\n"); 
