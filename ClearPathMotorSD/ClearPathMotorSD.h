@@ -80,9 +80,9 @@ class ClearPathMotorSD
     StepsPer100mm = 10000;
   }
   ~ClearPathMotorSD(){
-      CommandX = 0;
-        if(motorActivity.joinable()) motorActivity.join();
-        DEV_ModuleExit();
+    CommandX = 0;
+    if(motorActivity.joinable()) motorActivity.join();
+    DEV_ModuleExit();
   }
   void attach(int);
   void attach(int, int);

@@ -19,14 +19,29 @@ void LoadSensor::startRead(long readCount, uint8_t channel, ADS1256_DRATE drate)
 }
 void LoadSensor::startRead(long readCount, uint8_t channel, ADS1256_DRATE drate, ADS1256_GAIN gain)
 {
+
     if(readCount > bufferSize){
         RequestedRead = bufferSize;
     }else{
         RequestedRead = readCount;
     }
     Channel = channel;
+    if(Channel>=8){
+            return;
+    }
     ADS1256_ConfigADC(gain,drate);
     DEV_Delay_ms(10);
+    ADS1256_SetChannal(Channel);
+    ADS1256_WriteCmd(CMD_SYNC);
+    DEV_Delay_us(10);
+    ADS1256_WriteCmd(CMD_WAKEUP);
+    DEV_Delay_us(10);
+    DEV_Digital_Write(DEV_CS_PIN, 0);
+    ADS1256_WaitDRDY();
+    DEV_Delay_us(8);
+    DEV_SPI_WriteByte(CMD_RDATAC);       
+    DEV_Delay_us(8);
+
     loadSensorThread = std::thread([=]() {
         this->processReads();
     });
@@ -66,24 +81,13 @@ long LoadSensor::TimeOfReading(long index)
 }
 
 void LoadSensor::processReads(){
-    if(Channel>=8){
-            return;
-    }
     UBYTE buf[3] = {0,0,0};
-    ADS1256_SetChannal(Channel);
-    ADS1256_WriteCmd(CMD_SYNC);
-    DEV_Delay_us(10);
-    ADS1256_WriteCmd(CMD_WAKEUP);
-    DEV_Delay_us(10);
-    DEV_Digital_Write(DEV_CS_PIN, 0);
-    ADS1256_WaitDRDY();
-    DEV_Delay_us(8);
-    DEV_SPI_WriteByte(CMD_RDATAC);       
-    DEV_Delay_us(8);
     CurrentRead = 0;
     auto start = std::chrono::high_resolution_clock::now();
+    printf("start reading ...\r\n"); 
     while(CurrentRead < RequestedRead){
         ADS1256_WaitDRDY();
+        printf("reading ...\r\n"); 
         auto elapsed = std::chrono::high_resolution_clock::now() - start;
         ReadTimes[CurrentRead] = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
         buf[0] = DEV_SPI_ReadByte();

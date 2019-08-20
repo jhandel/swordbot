@@ -13,6 +13,8 @@
 #define SWIGPYTHON
 #endif
 
+#define SWIG_DIRECTORS
+#define SWIG_PYTHON_THREADS
 #define SWIG_PYTHON_DIRECTOR_NO_VTABLE
 
 
@@ -2654,6 +2656,450 @@ SWIGINTERN PyObject *SWIG_PyStaticMethod_New(PyObject *SWIGUNUSEDPARM(self), PyO
 }
 #endif
 
+/* -----------------------------------------------------------------------------
+ * director_common.swg
+ *
+ * This file contains support for director classes which is common between
+ * languages.
+ * ----------------------------------------------------------------------------- */
+
+/*
+  Use -DSWIG_DIRECTOR_STATIC if you prefer to avoid the use of the
+  'Swig' namespace. This could be useful for multi-modules projects.
+*/
+#ifdef SWIG_DIRECTOR_STATIC
+/* Force anonymous (static) namespace */
+#define Swig
+#endif
+/* -----------------------------------------------------------------------------
+ * director.swg
+ *
+ * This file contains support for director classes so that Python proxy
+ * methods can be called from C++.
+ * ----------------------------------------------------------------------------- */
+
+#ifndef SWIG_DIRECTOR_PYTHON_HEADER_
+#define SWIG_DIRECTOR_PYTHON_HEADER_
+
+#include <string>
+#include <iostream>
+#include <exception>
+#include <vector>
+#include <map>
+
+
+/*
+  Use -DSWIG_PYTHON_DIRECTOR_NO_VTABLE if you don't want to generate a 'virtual
+  table', and avoid multiple GetAttr calls to retrieve the python
+  methods.
+*/
+
+#ifndef SWIG_PYTHON_DIRECTOR_NO_VTABLE
+#ifndef SWIG_PYTHON_DIRECTOR_VTABLE
+#define SWIG_PYTHON_DIRECTOR_VTABLE
+#endif
+#endif
+
+
+
+/*
+  Use -DSWIG_DIRECTOR_NO_UEH if you prefer to avoid the use of the
+  Undefined Exception Handler provided by swig.
+*/
+#ifndef SWIG_DIRECTOR_NO_UEH
+#ifndef SWIG_DIRECTOR_UEH
+#define SWIG_DIRECTOR_UEH
+#endif
+#endif
+
+
+/*
+  Use -DSWIG_DIRECTOR_NORTTI if you prefer to avoid the use of the
+  native C++ RTTI and dynamic_cast<>. But be aware that directors
+  could stop working when using this option.
+*/
+#ifdef SWIG_DIRECTOR_NORTTI
+/*
+   When we don't use the native C++ RTTI, we implement a minimal one
+   only for Directors.
+*/
+# ifndef SWIG_DIRECTOR_RTDIR
+# define SWIG_DIRECTOR_RTDIR
+
+namespace Swig {
+  class Director;
+  SWIGINTERN std::map<void *, Director *>& get_rtdir_map() {
+    static std::map<void *, Director *> rtdir_map;
+    return rtdir_map;
+  }
+
+  SWIGINTERNINLINE void set_rtdir(void *vptr, Director *rtdir) {
+    get_rtdir_map()[vptr] = rtdir;
+  }
+
+  SWIGINTERNINLINE Director *get_rtdir(void *vptr) {
+    std::map<void *, Director *>::const_iterator pos = get_rtdir_map().find(vptr);
+    Director *rtdir = (pos != get_rtdir_map().end()) ? pos->second : 0;
+    return rtdir;
+  }
+}
+# endif /* SWIG_DIRECTOR_RTDIR */
+
+# define SWIG_DIRECTOR_CAST(ARG) Swig::get_rtdir(static_cast<void *>(ARG))
+# define SWIG_DIRECTOR_RGTR(ARG1, ARG2) Swig::set_rtdir(static_cast<void *>(ARG1), ARG2)
+
+#else
+
+# define SWIG_DIRECTOR_CAST(ARG) dynamic_cast<Swig::Director *>(ARG)
+# define SWIG_DIRECTOR_RGTR(ARG1, ARG2)
+
+#endif /* SWIG_DIRECTOR_NORTTI */
+
+extern "C" {
+  struct swig_type_info;
+}
+
+namespace Swig {
+
+  /* memory handler */
+  struct GCItem {
+    virtual ~GCItem() {}
+
+    virtual int get_own() const {
+      return 0;
+    }
+  };
+
+  struct GCItem_var {
+    GCItem_var(GCItem *item = 0) : _item(item) {
+    }
+
+    GCItem_var& operator=(GCItem *item) {
+      GCItem *tmp = _item;
+      _item = item;
+      delete tmp;
+      return *this;
+    }
+
+    ~GCItem_var() {
+      delete _item;
+    }
+
+    GCItem * operator->() const {
+      return _item;
+    }
+
+  private:
+    GCItem *_item;
+  };
+
+  struct GCItem_Object : GCItem {
+    GCItem_Object(int own) : _own(own) {
+    }
+
+    virtual ~GCItem_Object() {
+    }
+
+    int get_own() const {
+      return _own;
+    }
+
+  private:
+    int _own;
+  };
+
+  template <typename Type>
+  struct GCItem_T : GCItem {
+    GCItem_T(Type *ptr) : _ptr(ptr) {
+    }
+
+    virtual ~GCItem_T() {
+      delete _ptr;
+    }
+
+  private:
+    Type *_ptr;
+  };
+
+  template <typename Type>
+  struct GCArray_T : GCItem {
+    GCArray_T(Type *ptr) : _ptr(ptr) {
+    }
+
+    virtual ~GCArray_T() {
+      delete[] _ptr;
+    }
+
+  private:
+    Type *_ptr;
+  };
+
+  /* base class for director exceptions */
+  class DirectorException : public std::exception {
+  protected:
+    std::string swig_msg;
+  public:
+    DirectorException(PyObject *error, const char *hdr ="", const char *msg ="") : swig_msg(hdr) {
+      SWIG_PYTHON_THREAD_BEGIN_BLOCK;
+      if (msg[0]) {
+        swig_msg += " ";
+        swig_msg += msg;
+      }
+      if (!PyErr_Occurred()) {
+        PyErr_SetString(error, what());
+      }
+      SWIG_PYTHON_THREAD_END_BLOCK;
+    }
+
+    virtual ~DirectorException() throw() {
+    }
+
+    /* Deprecated, use what() instead */
+    const char *getMessage() const {
+      return what();
+    }
+
+    const char *what() const throw() {
+      return swig_msg.c_str();
+    }
+
+    static void raise(PyObject *error, const char *msg) {
+      throw DirectorException(error, msg);
+    }
+
+    static void raise(const char *msg) {
+      raise(PyExc_RuntimeError, msg);
+    }
+  };
+
+  /* unknown exception handler  */
+  class UnknownExceptionHandler {
+#ifdef SWIG_DIRECTOR_UEH
+    static void handler() {
+      try {
+        throw;
+      } catch (DirectorException& e) {
+        std::cerr << "SWIG Director exception caught:" << std::endl
+                  << e.what() << std::endl;
+      } catch (std::exception& e) {
+        std::cerr << "std::exception caught: "<< e.what() << std::endl;
+      } catch (...) {
+        std::cerr << "Unknown exception caught." << std::endl;
+      }
+
+      std::cerr << std::endl
+                << "Python interpreter traceback:" << std::endl;
+      PyErr_Print();
+      std::cerr << std::endl;
+
+      std::cerr << "This exception was caught by the SWIG unexpected exception handler." << std::endl
+                << "Try using %feature(\"director:except\") to avoid reaching this point." << std::endl
+                << std::endl
+                << "Exception is being re-thrown, program will likely abort/terminate." << std::endl;
+      throw;
+    }
+
+  public:
+
+    std::unexpected_handler old;
+    UnknownExceptionHandler(std::unexpected_handler nh = handler) {
+      old = std::set_unexpected(nh);
+    }
+
+    ~UnknownExceptionHandler() {
+      std::set_unexpected(old);
+    }
+#endif
+  };
+
+  /* type mismatch in the return value from a python method call */
+  class DirectorTypeMismatchException : public DirectorException {
+  public:
+    DirectorTypeMismatchException(PyObject *error, const char *msg="")
+      : DirectorException(error, "SWIG director type mismatch", msg) {
+    }
+
+    DirectorTypeMismatchException(const char *msg="")
+      : DirectorException(PyExc_TypeError, "SWIG director type mismatch", msg) {
+    }
+
+    static void raise(PyObject *error, const char *msg) {
+      throw DirectorTypeMismatchException(error, msg);
+    }
+
+    static void raise(const char *msg) {
+      throw DirectorTypeMismatchException(msg);
+    }
+  };
+
+  /* any python exception that occurs during a director method call */
+  class DirectorMethodException : public DirectorException {
+  public:
+    DirectorMethodException(const char *msg = "")
+      : DirectorException(PyExc_RuntimeError, "SWIG director method error.", msg) {
+    }
+
+    static void raise(const char *msg) {
+      throw DirectorMethodException(msg);
+    }
+  };
+
+  /* attempt to call a pure virtual method via a director method */
+  class DirectorPureVirtualException : public DirectorException {
+  public:
+    DirectorPureVirtualException(const char *msg = "")
+      : DirectorException(PyExc_RuntimeError, "SWIG director pure virtual method called", msg) {
+    }
+
+    static void raise(const char *msg) {
+      throw DirectorPureVirtualException(msg);
+    }
+  };
+
+
+#if defined(SWIG_PYTHON_THREADS)
+/*  __THREAD__ is the old macro to activate some thread support */
+# if !defined(__THREAD__)
+#   define __THREAD__ 1
+# endif
+#endif
+
+#ifdef __THREAD__
+# include "pythread.h"
+  class Guard {
+    PyThread_type_lock &mutex_;
+
+  public:
+    Guard(PyThread_type_lock & mutex) : mutex_(mutex) {
+      PyThread_acquire_lock(mutex_, WAIT_LOCK);
+    }
+
+    ~Guard() {
+      PyThread_release_lock(mutex_);
+    }
+  };
+# define SWIG_GUARD(mutex) Guard _guard(mutex)
+#else
+# define SWIG_GUARD(mutex)
+#endif
+
+  /* director base class */
+  class Director {
+  private:
+    /* pointer to the wrapped python object */
+    PyObject *swig_self;
+    /* flag indicating whether the object is owned by python or c++ */
+    mutable bool swig_disown_flag;
+
+    /* decrement the reference count of the wrapped python object */
+    void swig_decref() const {
+      if (swig_disown_flag) {
+        SWIG_PYTHON_THREAD_BEGIN_BLOCK;
+        Py_DECREF(swig_self);
+        SWIG_PYTHON_THREAD_END_BLOCK;
+      }
+    }
+
+  public:
+    /* wrap a python object. */
+    Director(PyObject *self) : swig_self(self), swig_disown_flag(false) {
+    }
+
+    /* discard our reference at destruction */
+    virtual ~Director() {
+      swig_decref();
+    }
+
+    /* return a pointer to the wrapped python object */
+    PyObject *swig_get_self() const {
+      return swig_self;
+    }
+
+    /* acquire ownership of the wrapped python object (the sense of "disown" is from python) */
+    void swig_disown() const {
+      if (!swig_disown_flag) {
+        swig_disown_flag=true;
+        swig_incref();
+      }
+    }
+
+    /* increase the reference count of the wrapped python object */
+    void swig_incref() const {
+      if (swig_disown_flag) {
+        Py_INCREF(swig_self);
+      }
+    }
+
+    /* methods to implement pseudo protected director members */
+    virtual bool swig_get_inner(const char * /* swig_protected_method_name */) const {
+      return true;
+    }
+
+    virtual void swig_set_inner(const char * /* swig_protected_method_name */, bool /* swig_val */) const {
+    }
+
+  /* ownership management */
+  private:
+    typedef std::map<void *, GCItem_var> swig_ownership_map;
+    mutable swig_ownership_map swig_owner;
+#ifdef __THREAD__
+    static PyThread_type_lock swig_mutex_own;
+#endif
+
+  public:
+    template <typename Type>
+    void swig_acquire_ownership_array(Type *vptr) const {
+      if (vptr) {
+        SWIG_GUARD(swig_mutex_own);
+        swig_owner[vptr] = new GCArray_T<Type>(vptr);
+      }
+    }
+
+    template <typename Type>
+    void swig_acquire_ownership(Type *vptr) const {
+      if (vptr) {
+        SWIG_GUARD(swig_mutex_own);
+        swig_owner[vptr] = new GCItem_T<Type>(vptr);
+      }
+    }
+
+    void swig_acquire_ownership_obj(void *vptr, int own) const {
+      if (vptr && own) {
+        SWIG_GUARD(swig_mutex_own);
+        swig_owner[vptr] = new GCItem_Object(own);
+      }
+    }
+
+    int swig_release_ownership(void *vptr) const {
+      int own = 0;
+      if (vptr) {
+        SWIG_GUARD(swig_mutex_own);
+        swig_ownership_map::iterator iter = swig_owner.find(vptr);
+        if (iter != swig_owner.end()) {
+          own = iter->second->get_own();
+          swig_owner.erase(iter);
+        }
+      }
+      return own;
+    }
+
+    template <typename Type>
+    static PyObject *swig_pyobj_disown(PyObject *pyobj, PyObject *SWIGUNUSEDPARM(args)) {
+      SwigPyObject *sobj = (SwigPyObject *)pyobj;
+      sobj->own = 0;
+      Director *d = SWIG_DIRECTOR_CAST(reinterpret_cast<Type *>(sobj->ptr));
+      if (d)
+        d->swig_disown();
+      return PyWeakref_NewProxy(pyobj, NULL);
+    }
+  };
+
+#ifdef __THREAD__
+  PyThread_type_lock Director::swig_mutex_own = PyThread_allocate_lock();
+#endif
+}
+
+#endif
 
 /* -------- TYPES TABLE (BEGIN) -------- */
 
@@ -2661,17 +3107,19 @@ SWIGINTERN PyObject *SWIG_PyStaticMethod_New(PyObject *SWIGUNUSEDPARM(self), PyO
 #define SWIGTYPE_p_ADS1256_GAIN swig_types[1]
 #define SWIGTYPE_p_ClearPathMotorSD swig_types[2]
 #define SWIGTYPE_p_LoadSensor swig_types[3]
-#define SWIGTYPE_p_char swig_types[4]
-#define SWIGTYPE_p_int swig_types[5]
-#define SWIGTYPE_p_long_long swig_types[6]
-#define SWIGTYPE_p_short swig_types[7]
-#define SWIGTYPE_p_signed_char swig_types[8]
-#define SWIGTYPE_p_unsigned_char swig_types[9]
-#define SWIGTYPE_p_unsigned_int swig_types[10]
-#define SWIGTYPE_p_unsigned_long_long swig_types[11]
-#define SWIGTYPE_p_unsigned_short swig_types[12]
-static swig_type_info *swig_types[14];
-static swig_module_info swig_module = {swig_types, 13, 0, 0, 0, 0};
+#define SWIGTYPE_p_Switch swig_types[4]
+#define SWIGTYPE_p_SwitchCallback swig_types[5]
+#define SWIGTYPE_p_char swig_types[6]
+#define SWIGTYPE_p_int swig_types[7]
+#define SWIGTYPE_p_long_long swig_types[8]
+#define SWIGTYPE_p_short swig_types[9]
+#define SWIGTYPE_p_signed_char swig_types[10]
+#define SWIGTYPE_p_unsigned_char swig_types[11]
+#define SWIGTYPE_p_unsigned_int swig_types[12]
+#define SWIGTYPE_p_unsigned_long_long swig_types[13]
+#define SWIGTYPE_p_unsigned_short swig_types[14]
+static swig_type_info *swig_types[16];
+static swig_module_info swig_module = {swig_types, 15, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -2780,6 +3228,7 @@ namespace swig {
      to compile the interface */
     #include "./../ClearPathMotorSD/ClearPathMotorSD.h" 
     #include "./../LoadSensor/LoadSensor.h" 
+    #include "./../Switch/Switch.h" 
 
 
 
@@ -3053,6 +3502,51 @@ SWIGINTERNINLINE PyObject*
 
 #include <stdint.h>		// Use the C99 official header
 
+
+
+/* ---------------------------------------------------
+ * C++ director class methods
+ * --------------------------------------------------- */
+
+#include "Devices_wrap.h"
+
+SwigDirector_SwitchCallback::SwigDirector_SwitchCallback(PyObject *self): SwitchCallback(), Swig::Director(self) {
+  SWIG_DIRECTOR_RGTR((SwitchCallback *)this, this); 
+}
+
+
+
+
+SwigDirector_SwitchCallback::~SwigDirector_SwitchCallback() {
+}
+
+void SwigDirector_SwitchCallback::run() {
+  SWIG_PYTHON_THREAD_BEGIN_BLOCK;
+  {
+    if (!swig_get_self()) {
+      Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call SwitchCallback.__init__.");
+    }
+#if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
+    const size_t swig_method_index = 0;
+    const char *const swig_method_name = "run";
+    PyObject *method = swig_get_method(swig_method_index, swig_method_name);
+    swig::SwigVar_PyObject args = PyTuple_New(0);
+    swig::SwigVar_PyObject result = PyObject_Call(method, (PyObject *) args, NULL);
+#else
+    swig::SwigVar_PyObject swig_method_name = SWIG_Python_str_FromChar("run");
+    swig::SwigVar_PyObject result = PyObject_CallMethodObjArgs(swig_get_self(), (PyObject *) swig_method_name, NULL);
+#endif
+    if (!result) {
+      PyObject *error = PyErr_Occurred();
+      if (error) {
+        Swig::DirectorMethodException::raise("Error detected when calling 'SwitchCallback.run'");
+      }
+    }
+  }
+  SWIG_PYTHON_THREAD_END_BLOCK;
+}
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -3061,7 +3555,11 @@ SWIGINTERN PyObject *_wrap_new_ClearPathMotorSD(PyObject *SWIGUNUSEDPARM(self), 
   ClearPathMotorSD *result = 0 ;
   
   if (!SWIG_Python_UnpackTuple(args, "new_ClearPathMotorSD", 0, 0, 0)) SWIG_fail;
-  result = (ClearPathMotorSD *)new ClearPathMotorSD();
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (ClearPathMotorSD *)new ClearPathMotorSD();
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_ClearPathMotorSD, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -3083,7 +3581,11 @@ SWIGINTERN PyObject *_wrap_delete_ClearPathMotorSD(PyObject *SWIGUNUSEDPARM(self
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_ClearPathMotorSD" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
   }
   arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
-  delete arg1;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    delete arg1;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3111,7 +3613,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_attach__SWIG_0(PyObject *SWIGUNUSEDP
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_attach" "', argument " "2"" of type '" "int""'");
   } 
   arg2 = static_cast< int >(val2);
-  (arg1)->attach(arg2);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->attach(arg2);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3147,7 +3653,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_attach__SWIG_1(PyObject *SWIGUNUSEDP
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "ClearPathMotorSD_attach" "', argument " "3"" of type '" "int""'");
   } 
   arg3 = static_cast< int >(val3);
-  (arg1)->attach(arg2,arg3);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->attach(arg2,arg3);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3191,7 +3701,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_attach__SWIG_2(PyObject *SWIGUNUSEDP
     SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "ClearPathMotorSD_attach" "', argument " "4"" of type '" "int""'");
   } 
   arg4 = static_cast< int >(val4);
-  (arg1)->attach(arg2,arg3,arg4);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->attach(arg2,arg3,arg4);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3243,7 +3757,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_attach__SWIG_3(PyObject *SWIGUNUSEDP
     SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "ClearPathMotorSD_attach" "', argument " "5"" of type '" "int""'");
   } 
   arg5 = static_cast< int >(val5);
-  (arg1)->attach(arg2,arg3,arg4,arg5);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->attach(arg2,arg3,arg4,arg5);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3397,7 +3915,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_moveInMM(PyObject *SWIGUNUSEDPARM(se
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "ClearPathMotorSD_moveInMM" "', argument " "3"" of type '" "int""'");
   } 
   arg3 = static_cast< int >(val3);
-  result = (bool)(arg1)->moveInMM(arg2,arg3);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (bool)(arg1)->moveInMM(arg2,arg3);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_From_bool(static_cast< bool >(result));
   return resultobj;
 fail:
@@ -3419,7 +3941,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_enable(PyObject *SWIGUNUSEDPARM(self
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_enable" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
   }
   arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
-  (arg1)->enable();
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->enable();
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3442,7 +3968,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_getCommandedPosition(PyObject *SWIGU
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_getCommandedPosition" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
   }
   arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
-  result = (long)(arg1)->getCommandedPosition();
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (long)(arg1)->getCommandedPosition();
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_From_long(static_cast< long >(result));
   return resultobj;
 fail:
@@ -3465,7 +3995,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_readHLFB(PyObject *SWIGUNUSEDPARM(se
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_readHLFB" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
   }
   arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
-  result = (bool)(arg1)->readHLFB();
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (bool)(arg1)->readHLFB();
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_From_bool(static_cast< bool >(result));
   return resultobj;
 fail:
@@ -3487,7 +4021,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_stopMove(PyObject *SWIGUNUSEDPARM(se
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_stopMove" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
   }
   arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
-  (arg1)->stopMove();
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->stopMove();
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3516,7 +4054,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_stepsPer100mm(PyObject *SWIGUNUSEDPA
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_stepsPer100mm" "', argument " "2"" of type '" "double""'");
   } 
   arg2 = static_cast< double >(val2);
-  (arg1)->stepsPer100mm(arg2);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->stepsPer100mm(arg2);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3545,7 +4087,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_setMaxVelInMM(PyObject *SWIGUNUSEDPA
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_setMaxVelInMM" "', argument " "2"" of type '" "long""'");
   } 
   arg2 = static_cast< long >(val2);
-  (arg1)->setMaxVelInMM(arg2);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->setMaxVelInMM(arg2);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3574,7 +4120,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_setAccelInMM(PyObject *SWIGUNUSEDPAR
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_setAccelInMM" "', argument " "2"" of type '" "long""'");
   } 
   arg2 = static_cast< long >(val2);
-  (arg1)->setAccelInMM(arg2);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->setAccelInMM(arg2);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3603,7 +4153,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_setDeccelInMM(PyObject *SWIGUNUSEDPA
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_setDeccelInMM" "', argument " "2"" of type '" "long""'");
   } 
   arg2 = static_cast< long >(val2);
-  (arg1)->setDeccelInMM(arg2);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->setDeccelInMM(arg2);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3626,7 +4180,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_commandDone(PyObject *SWIGUNUSEDPARM
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_commandDone" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
   }
   arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
-  result = (bool)(arg1)->commandDone();
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (bool)(arg1)->commandDone();
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_From_bool(static_cast< bool >(result));
   return resultobj;
 fail:
@@ -3648,7 +4206,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_disable(PyObject *SWIGUNUSEDPARM(sel
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_disable" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
   }
   arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
-  (arg1)->disable();
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->disable();
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3677,7 +4239,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_PinA_set(PyObject *SWIGUNUSEDPARM(se
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_PinA_set" "', argument " "2"" of type '" "uint8_t""'");
   } 
   arg2 = static_cast< uint8_t >(val2);
-  if (arg1) (arg1)->PinA = arg2;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    if (arg1) (arg1)->PinA = arg2;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3700,7 +4266,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_PinA_get(PyObject *SWIGUNUSEDPARM(se
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_PinA_get" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
   }
   arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
-  result = (uint8_t) ((arg1)->PinA);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (uint8_t) ((arg1)->PinA);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_From_unsigned_SS_char(static_cast< unsigned char >(result));
   return resultobj;
 fail:
@@ -3729,7 +4299,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_PinB_set(PyObject *SWIGUNUSEDPARM(se
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_PinB_set" "', argument " "2"" of type '" "uint8_t""'");
   } 
   arg2 = static_cast< uint8_t >(val2);
-  if (arg1) (arg1)->PinB = arg2;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    if (arg1) (arg1)->PinB = arg2;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3752,7 +4326,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_PinB_get(PyObject *SWIGUNUSEDPARM(se
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_PinB_get" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
   }
   arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
-  result = (uint8_t) ((arg1)->PinB);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (uint8_t) ((arg1)->PinB);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_From_unsigned_SS_char(static_cast< unsigned char >(result));
   return resultobj;
 fail:
@@ -3781,7 +4359,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_PinE_set(PyObject *SWIGUNUSEDPARM(se
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_PinE_set" "', argument " "2"" of type '" "uint8_t""'");
   } 
   arg2 = static_cast< uint8_t >(val2);
-  if (arg1) (arg1)->PinE = arg2;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    if (arg1) (arg1)->PinE = arg2;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3804,7 +4386,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_PinE_get(PyObject *SWIGUNUSEDPARM(se
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_PinE_get" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
   }
   arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
-  result = (uint8_t) ((arg1)->PinE);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (uint8_t) ((arg1)->PinE);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_From_unsigned_SS_char(static_cast< unsigned char >(result));
   return resultobj;
 fail:
@@ -3833,7 +4419,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_PinH_set(PyObject *SWIGUNUSEDPARM(se
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_PinH_set" "', argument " "2"" of type '" "uint8_t""'");
   } 
   arg2 = static_cast< uint8_t >(val2);
-  if (arg1) (arg1)->PinH = arg2;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    if (arg1) (arg1)->PinH = arg2;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3856,7 +4446,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_PinH_get(PyObject *SWIGUNUSEDPARM(se
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_PinH_get" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
   }
   arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
-  result = (uint8_t) ((arg1)->PinH);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (uint8_t) ((arg1)->PinH);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_From_unsigned_SS_char(static_cast< unsigned char >(result));
   return resultobj;
 fail:
@@ -3885,7 +4479,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_Enabled_set(PyObject *SWIGUNUSEDPARM
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_Enabled_set" "', argument " "2"" of type '" "bool""'");
   } 
   arg2 = static_cast< bool >(val2);
-  if (arg1) (arg1)->Enabled = arg2;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    if (arg1) (arg1)->Enabled = arg2;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3908,7 +4506,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_Enabled_get(PyObject *SWIGUNUSEDPARM
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_Enabled_get" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
   }
   arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
-  result = (bool) ((arg1)->Enabled);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (bool) ((arg1)->Enabled);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_From_bool(static_cast< bool >(result));
   return resultobj;
 fail:
@@ -3937,7 +4539,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_moveStateX_set(PyObject *SWIGUNUSEDP
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_moveStateX_set" "', argument " "2"" of type '" "int""'");
   } 
   arg2 = static_cast< int >(val2);
-  if (arg1) (arg1)->moveStateX = arg2;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    if (arg1) (arg1)->moveStateX = arg2;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3960,7 +4566,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_moveStateX_get(PyObject *SWIGUNUSEDP
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_moveStateX_get" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
   }
   arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
-  result = (int) ((arg1)->moveStateX);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (int) ((arg1)->moveStateX);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_From_int(static_cast< int >(result));
   return resultobj;
 fail:
@@ -3989,7 +4599,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_AbsPosition_set(PyObject *SWIGUNUSED
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_AbsPosition_set" "', argument " "2"" of type '" "long""'");
   } 
   arg2 = static_cast< long >(val2);
-  if (arg1) (arg1)->AbsPosition = (long volatile )arg2;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    if (arg1) (arg1)->AbsPosition = (long volatile )arg2;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4012,7 +4626,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_AbsPosition_get(PyObject *SWIGUNUSED
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_AbsPosition_get" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
   }
   arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
-  result = (long)(long) ((arg1)->AbsPosition);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (long)(long) ((arg1)->AbsPosition);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_From_long(static_cast< long >(result));
   return resultobj;
 fail:
@@ -4036,7 +4654,11 @@ SWIGINTERN PyObject *_wrap_new_LoadSensor(PyObject *SWIGUNUSEDPARM(self), PyObje
   LoadSensor *result = 0 ;
   
   if (!SWIG_Python_UnpackTuple(args, "new_LoadSensor", 0, 0, 0)) SWIG_fail;
-  result = (LoadSensor *)new LoadSensor();
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (LoadSensor *)new LoadSensor();
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_LoadSensor, SWIG_POINTER_NEW |  0 );
   return resultobj;
 fail:
@@ -4058,7 +4680,11 @@ SWIGINTERN PyObject *_wrap_delete_LoadSensor(PyObject *SWIGUNUSEDPARM(self), PyO
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_LoadSensor" "', argument " "1"" of type '" "LoadSensor *""'"); 
   }
   arg1 = reinterpret_cast< LoadSensor * >(argp1);
-  delete arg1;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    delete arg1;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4094,7 +4720,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_startRead__SWIG_0(PyObject *SWIGUNUSEDPARM
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "LoadSensor_startRead" "', argument " "3"" of type '" "uint8_t""'");
   } 
   arg3 = static_cast< uint8_t >(val3);
-  (arg1)->startRead(arg2,arg3);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->startRead(arg2,arg3);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4146,7 +4776,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_startRead__SWIG_1(PyObject *SWIGUNUSEDPARM
       if (SWIG_IsNewObj(res4)) delete temp;
     }
   }
-  (arg1)->startRead(arg2,arg3,arg4);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->startRead(arg2,arg3,arg4);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4214,7 +4848,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_startRead__SWIG_2(PyObject *SWIGUNUSEDPARM
       if (SWIG_IsNewObj(res5)) delete temp;
     }
   }
-  (arg1)->startRead(arg2,arg3,arg4,arg5);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->startRead(arg2,arg3,arg4,arg5);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4331,7 +4969,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_currentlyReading(PyObject *SWIGUNUSEDPARM(
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LoadSensor_currentlyReading" "', argument " "1"" of type '" "LoadSensor *""'"); 
   }
   arg1 = reinterpret_cast< LoadSensor * >(argp1);
-  result = (bool)(arg1)->currentlyReading();
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (bool)(arg1)->currentlyReading();
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_From_bool(static_cast< bool >(result));
   return resultobj;
 fail:
@@ -4353,7 +4995,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_stopRead(PyObject *SWIGUNUSEDPARM(self), P
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LoadSensor_stopRead" "', argument " "1"" of type '" "LoadSensor *""'"); 
   }
   arg1 = reinterpret_cast< LoadSensor * >(argp1);
-  (arg1)->stopRead();
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->stopRead();
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4375,7 +5021,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_clearData(PyObject *SWIGUNUSEDPARM(self), 
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LoadSensor_clearData" "', argument " "1"" of type '" "LoadSensor *""'"); 
   }
   arg1 = reinterpret_cast< LoadSensor * >(argp1);
-  (arg1)->clearData();
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->clearData();
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4405,7 +5055,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_ReadingAt(PyObject *SWIGUNUSEDPARM(self), 
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "LoadSensor_ReadingAt" "', argument " "2"" of type '" "long""'");
   } 
   arg2 = static_cast< long >(val2);
-  result = (uint32_t)(arg1)->ReadingAt(arg2);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (uint32_t)(arg1)->ReadingAt(arg2);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_From_unsigned_SS_int(static_cast< unsigned int >(result));
   return resultobj;
 fail:
@@ -4435,7 +5089,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_TimeOfReading(PyObject *SWIGUNUSEDPARM(sel
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "LoadSensor_TimeOfReading" "', argument " "2"" of type '" "long""'");
   } 
   arg2 = static_cast< long >(val2);
-  result = (long)(arg1)->TimeOfReading(arg2);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (long)(arg1)->TimeOfReading(arg2);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_From_long(static_cast< long >(result));
   return resultobj;
 fail:
@@ -4464,7 +5122,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_Channel_set(PyObject *SWIGUNUSEDPARM(self)
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "LoadSensor_Channel_set" "', argument " "2"" of type '" "uint8_t""'");
   } 
   arg2 = static_cast< uint8_t >(val2);
-  if (arg1) (arg1)->Channel = arg2;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    if (arg1) (arg1)->Channel = arg2;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4487,7 +5149,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_Channel_get(PyObject *SWIGUNUSEDPARM(self)
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LoadSensor_Channel_get" "', argument " "1"" of type '" "LoadSensor *""'"); 
   }
   arg1 = reinterpret_cast< LoadSensor * >(argp1);
-  result = (uint8_t) ((arg1)->Channel);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (uint8_t) ((arg1)->Channel);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_From_unsigned_SS_char(static_cast< unsigned char >(result));
   return resultobj;
 fail:
@@ -4516,7 +5182,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_CurrentRead_set(PyObject *SWIGUNUSEDPARM(s
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "LoadSensor_CurrentRead_set" "', argument " "2"" of type '" "long""'");
   } 
   arg2 = static_cast< long >(val2);
-  if (arg1) (arg1)->CurrentRead = (long volatile )arg2;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    if (arg1) (arg1)->CurrentRead = (long volatile )arg2;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4539,7 +5209,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_CurrentRead_get(PyObject *SWIGUNUSEDPARM(s
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LoadSensor_CurrentRead_get" "', argument " "1"" of type '" "LoadSensor *""'"); 
   }
   arg1 = reinterpret_cast< LoadSensor * >(argp1);
-  result = (long)(long) ((arg1)->CurrentRead);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (long)(long) ((arg1)->CurrentRead);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_From_long(static_cast< long >(result));
   return resultobj;
 fail:
@@ -4568,7 +5242,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_RequestedRead_set(PyObject *SWIGUNUSEDPARM
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "LoadSensor_RequestedRead_set" "', argument " "2"" of type '" "long""'");
   } 
   arg2 = static_cast< long >(val2);
-  if (arg1) (arg1)->RequestedRead = arg2;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    if (arg1) (arg1)->RequestedRead = arg2;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4591,7 +5269,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_RequestedRead_get(PyObject *SWIGUNUSEDPARM
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LoadSensor_RequestedRead_get" "', argument " "1"" of type '" "LoadSensor *""'"); 
   }
   arg1 = reinterpret_cast< LoadSensor * >(argp1);
-  result = (long) ((arg1)->RequestedRead);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (long) ((arg1)->RequestedRead);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_From_long(static_cast< long >(result));
   return resultobj;
 fail:
@@ -4628,7 +5310,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_DateRate_set(PyObject *SWIGUNUSEDPARM(self
       if (SWIG_IsNewObj(res2)) delete temp;
     }
   }
-  if (arg1) (arg1)->DateRate = arg2;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    if (arg1) (arg1)->DateRate = arg2;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4651,7 +5337,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_DateRate_get(PyObject *SWIGUNUSEDPARM(self
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LoadSensor_DateRate_get" "', argument " "1"" of type '" "LoadSensor *""'"); 
   }
   arg1 = reinterpret_cast< LoadSensor * >(argp1);
-  result =  ((arg1)->DateRate);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result =  ((arg1)->DateRate);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_NewPointerObj((new ADS1256_DRATE(static_cast< const ADS1256_DRATE& >(result))), SWIGTYPE_p_ADS1256_DRATE, SWIG_POINTER_OWN |  0 );
   return resultobj;
 fail:
@@ -4688,7 +5378,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_Gain_set(PyObject *SWIGUNUSEDPARM(self), P
       if (SWIG_IsNewObj(res2)) delete temp;
     }
   }
-  if (arg1) (arg1)->Gain = arg2;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    if (arg1) (arg1)->Gain = arg2;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4711,7 +5405,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_Gain_get(PyObject *SWIGUNUSEDPARM(self), P
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LoadSensor_Gain_get" "', argument " "1"" of type '" "LoadSensor *""'"); 
   }
   arg1 = reinterpret_cast< LoadSensor * >(argp1);
-  result =  ((arg1)->Gain);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result =  ((arg1)->Gain);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
   resultobj = SWIG_NewPointerObj((new ADS1256_GAIN(static_cast< const ADS1256_GAIN& >(result))), SWIGTYPE_p_ADS1256_GAIN, SWIG_POINTER_OWN |  0 );
   return resultobj;
 fail:
@@ -4727,6 +5425,451 @@ SWIGINTERN PyObject *LoadSensor_swigregister(PyObject *SWIGUNUSEDPARM(self), PyO
 }
 
 SWIGINTERN PyObject *LoadSensor_swiginit(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  return SWIG_Python_InitShadowInstance(args);
+}
+
+SWIGINTERN PyObject *_wrap_delete_SwitchCallback(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  SwitchCallback *arg1 = (SwitchCallback *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_SwitchCallback, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_SwitchCallback" "', argument " "1"" of type '" "SwitchCallback *""'"); 
+  }
+  arg1 = reinterpret_cast< SwitchCallback * >(argp1);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    delete arg1;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_SwitchCallback_run(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  SwitchCallback *arg1 = (SwitchCallback *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  Swig::Director *director = 0;
+  bool upcall = false;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_SwitchCallback, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SwitchCallback_run" "', argument " "1"" of type '" "SwitchCallback *""'"); 
+  }
+  arg1 = reinterpret_cast< SwitchCallback * >(argp1);
+  director = SWIG_DIRECTOR_CAST(arg1);
+  upcall = (director && (director->swig_get_self()==swig_obj[0]));
+  try {
+    if (upcall) {
+      (arg1)->SwitchCallback::run();
+    } else {
+      (arg1)->run();
+    }
+  } catch (Swig::DirectorException&) {
+    SWIG_fail;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_SwitchCallback(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  PyObject *arg1 = (PyObject *) 0 ;
+  PyObject *swig_obj[1] ;
+  SwitchCallback *result = 0 ;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  arg1 = swig_obj[0];
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    if ( arg1 != Py_None ) {
+      /* subclassed */
+      result = (SwitchCallback *)new SwigDirector_SwitchCallback(arg1); 
+    } else {
+      result = (SwitchCallback *)new SwitchCallback(); 
+    }
+    
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_SwitchCallback, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_disown_SwitchCallback(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  SwitchCallback *arg1 = (SwitchCallback *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_SwitchCallback, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "disown_SwitchCallback" "', argument " "1"" of type '" "SwitchCallback *""'"); 
+  }
+  arg1 = reinterpret_cast< SwitchCallback * >(argp1);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    {
+      Swig::Director *director = SWIG_DIRECTOR_CAST(arg1);
+      if (director) director->swig_disown();
+    }
+    
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *SwitchCallback_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!SWIG_Python_UnpackTuple(args, "swigregister", 1, 1, &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_SwitchCallback, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *SwitchCallback_swiginit(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  return SWIG_Python_InitShadowInstance(args);
+}
+
+SWIGINTERN PyObject *_wrap_new_Switch(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Switch *result = 0 ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "new_Switch", 0, 0, 0)) SWIG_fail;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (Switch *)new Switch();
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Switch, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_Switch(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Switch *arg1 = (Switch *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_Switch, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_Switch" "', argument " "1"" of type '" "Switch *""'"); 
+  }
+  arg1 = reinterpret_cast< Switch * >(argp1);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    delete arg1;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Switch_startMonitor(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Switch *arg1 = (Switch *) 0 ;
+  uint8_t arg2 ;
+  bool arg3 ;
+  long arg4 ;
+  SwitchCallback *arg5 = (SwitchCallback *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned char val2 ;
+  int ecode2 = 0 ;
+  bool val3 ;
+  int ecode3 = 0 ;
+  long val4 ;
+  int ecode4 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  PyObject *swig_obj[5] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "Switch_startMonitor", 5, 5, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_Switch, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Switch_startMonitor" "', argument " "1"" of type '" "Switch *""'"); 
+  }
+  arg1 = reinterpret_cast< Switch * >(argp1);
+  ecode2 = SWIG_AsVal_unsigned_SS_char(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Switch_startMonitor" "', argument " "2"" of type '" "uint8_t""'");
+  } 
+  arg2 = static_cast< uint8_t >(val2);
+  ecode3 = SWIG_AsVal_bool(swig_obj[2], &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Switch_startMonitor" "', argument " "3"" of type '" "bool""'");
+  } 
+  arg3 = static_cast< bool >(val3);
+  ecode4 = SWIG_AsVal_long(swig_obj[3], &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Switch_startMonitor" "', argument " "4"" of type '" "long""'");
+  } 
+  arg4 = static_cast< long >(val4);
+  res5 = SWIG_ConvertPtr(swig_obj[4], &argp5,SWIGTYPE_p_SwitchCallback, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "Switch_startMonitor" "', argument " "5"" of type '" "SwitchCallback *""'"); 
+  }
+  arg5 = reinterpret_cast< SwitchCallback * >(argp5);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->startMonitor(arg2,arg3,arg4,arg5);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Switch_stopMonitor(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Switch *arg1 = (Switch *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_Switch, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Switch_stopMonitor" "', argument " "1"" of type '" "Switch *""'"); 
+  }
+  arg1 = reinterpret_cast< Switch * >(argp1);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->stopMonitor();
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Switch_Pin_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Switch *arg1 = (Switch *) 0 ;
+  uint8_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned char val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "Switch_Pin_set", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_Switch, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Switch_Pin_set" "', argument " "1"" of type '" "Switch *""'"); 
+  }
+  arg1 = reinterpret_cast< Switch * >(argp1);
+  ecode2 = SWIG_AsVal_unsigned_SS_char(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Switch_Pin_set" "', argument " "2"" of type '" "uint8_t""'");
+  } 
+  arg2 = static_cast< uint8_t >(val2);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    if (arg1) (arg1)->Pin = arg2;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Switch_Pin_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Switch *arg1 = (Switch *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  uint8_t result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_Switch, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Switch_Pin_get" "', argument " "1"" of type '" "Switch *""'"); 
+  }
+  arg1 = reinterpret_cast< Switch * >(argp1);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (uint8_t) ((arg1)->Pin);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_From_unsigned_SS_char(static_cast< unsigned char >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Switch_Edge_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Switch *arg1 = (Switch *) 0 ;
+  bool arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  bool val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "Switch_Edge_set", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_Switch, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Switch_Edge_set" "', argument " "1"" of type '" "Switch *""'"); 
+  }
+  arg1 = reinterpret_cast< Switch * >(argp1);
+  ecode2 = SWIG_AsVal_bool(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Switch_Edge_set" "', argument " "2"" of type '" "bool""'");
+  } 
+  arg2 = static_cast< bool >(val2);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    if (arg1) (arg1)->Edge = arg2;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Switch_Edge_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Switch *arg1 = (Switch *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  bool result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_Switch, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Switch_Edge_get" "', argument " "1"" of type '" "Switch *""'"); 
+  }
+  arg1 = reinterpret_cast< Switch * >(argp1);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (bool) ((arg1)->Edge);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Switch_Poll_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Switch *arg1 = (Switch *) 0 ;
+  long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "Switch_Poll_set", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_Switch, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Switch_Poll_set" "', argument " "1"" of type '" "Switch *""'"); 
+  }
+  arg1 = reinterpret_cast< Switch * >(argp1);
+  ecode2 = SWIG_AsVal_long(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Switch_Poll_set" "', argument " "2"" of type '" "long""'");
+  } 
+  arg2 = static_cast< long >(val2);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    if (arg1) (arg1)->Poll = arg2;
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Switch_Poll_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Switch *arg1 = (Switch *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  long result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_Switch, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Switch_Poll_get" "', argument " "1"" of type '" "Switch *""'"); 
+  }
+  arg1 = reinterpret_cast< Switch * >(argp1);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (long) ((arg1)->Poll);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_From_long(static_cast< long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *Switch_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!SWIG_Python_UnpackTuple(args, "swigregister", 1, 1, &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_Switch, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
+SWIGINTERN PyObject *Switch_swiginit(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   return SWIG_Python_InitShadowInstance(args);
 }
 
@@ -4782,6 +5925,24 @@ static PyMethodDef SwigMethods[] = {
 	 { "LoadSensor_Gain_get", _wrap_LoadSensor_Gain_get, METH_O, NULL},
 	 { "LoadSensor_swigregister", LoadSensor_swigregister, METH_O, NULL},
 	 { "LoadSensor_swiginit", LoadSensor_swiginit, METH_VARARGS, NULL},
+	 { "delete_SwitchCallback", _wrap_delete_SwitchCallback, METH_O, NULL},
+	 { "SwitchCallback_run", _wrap_SwitchCallback_run, METH_O, NULL},
+	 { "new_SwitchCallback", _wrap_new_SwitchCallback, METH_O, NULL},
+	 { "disown_SwitchCallback", _wrap_disown_SwitchCallback, METH_O, NULL},
+	 { "SwitchCallback_swigregister", SwitchCallback_swigregister, METH_O, NULL},
+	 { "SwitchCallback_swiginit", SwitchCallback_swiginit, METH_VARARGS, NULL},
+	 { "new_Switch", _wrap_new_Switch, METH_NOARGS, NULL},
+	 { "delete_Switch", _wrap_delete_Switch, METH_O, NULL},
+	 { "Switch_startMonitor", _wrap_Switch_startMonitor, METH_VARARGS, NULL},
+	 { "Switch_stopMonitor", _wrap_Switch_stopMonitor, METH_O, NULL},
+	 { "Switch_Pin_set", _wrap_Switch_Pin_set, METH_VARARGS, NULL},
+	 { "Switch_Pin_get", _wrap_Switch_Pin_get, METH_O, NULL},
+	 { "Switch_Edge_set", _wrap_Switch_Edge_set, METH_VARARGS, NULL},
+	 { "Switch_Edge_get", _wrap_Switch_Edge_get, METH_O, NULL},
+	 { "Switch_Poll_set", _wrap_Switch_Poll_set, METH_VARARGS, NULL},
+	 { "Switch_Poll_get", _wrap_Switch_Poll_get, METH_O, NULL},
+	 { "Switch_swigregister", Switch_swigregister, METH_O, NULL},
+	 { "Switch_swiginit", Switch_swiginit, METH_VARARGS, NULL},
 	 { NULL, NULL, 0, NULL }
 };
 
@@ -4796,6 +5957,8 @@ static swig_type_info _swigt__p_ADS1256_DRATE = {"_p_ADS1256_DRATE", "ADS1256_DR
 static swig_type_info _swigt__p_ADS1256_GAIN = {"_p_ADS1256_GAIN", "ADS1256_GAIN *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_ClearPathMotorSD = {"_p_ClearPathMotorSD", "ClearPathMotorSD *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_LoadSensor = {"_p_LoadSensor", "LoadSensor *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_Switch = {"_p_Switch", "Switch *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_SwitchCallback = {"_p_SwitchCallback", "SwitchCallback *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_int = {"_p_int", "intptr_t *|int *|int_least32_t *|int_fast32_t *|int32_t *|int_fast16_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_long_long = {"_p_long_long", "int_least64_t *|int_fast64_t *|int64_t *|long long *|intmax_t *", 0, 0, (void*)0, 0};
@@ -4811,6 +5974,8 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_ADS1256_GAIN,
   &_swigt__p_ClearPathMotorSD,
   &_swigt__p_LoadSensor,
+  &_swigt__p_Switch,
+  &_swigt__p_SwitchCallback,
   &_swigt__p_char,
   &_swigt__p_int,
   &_swigt__p_long_long,
@@ -4826,6 +5991,8 @@ static swig_cast_info _swigc__p_ADS1256_DRATE[] = {  {&_swigt__p_ADS1256_DRATE, 
 static swig_cast_info _swigc__p_ADS1256_GAIN[] = {  {&_swigt__p_ADS1256_GAIN, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_ClearPathMotorSD[] = {  {&_swigt__p_ClearPathMotorSD, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_LoadSensor[] = {  {&_swigt__p_LoadSensor, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_Switch[] = {  {&_swigt__p_Switch, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_SwitchCallback[] = {  {&_swigt__p_SwitchCallback, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_int[] = {  {&_swigt__p_int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_long_long[] = {  {&_swigt__p_long_long, 0, 0, 0},{0, 0, 0, 0}};
@@ -4841,6 +6008,8 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_ADS1256_GAIN,
   _swigc__p_ClearPathMotorSD,
   _swigc__p_LoadSensor,
+  _swigc__p_Switch,
+  _swigc__p_SwitchCallback,
   _swigc__p_char,
   _swigc__p_int,
   _swigc__p_long_long,
@@ -5579,6 +6748,9 @@ SWIG_init(void) {
   
   SWIG_InstallConstants(d,swig_const_table);
   
+  
+  /* Initialize threading */
+  SWIG_PYTHON_INITIALIZE_THREADS;
 #if PY_VERSION_HEX >= 0x03000000
   return m;
 #else

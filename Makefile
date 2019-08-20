@@ -9,8 +9,8 @@ PYTHONCFLAGS = -I/usr/include/python3.5m -I/usr/include/python3.5m  -Wno-unused-
 PYTHONLDLAGS = -L/usr/lib/python3.5/config-3.5m-arm-linux-gnueabihf -L/usr/lib -lpython3.5m -lpthread -ldl  -lutil -lm  -Xlinker -export-dynamic -Wl,-O1 -Wl,-Bsymbolic-functions
 
 
-./controller/_Devices.so:./bin/ClearPathMotorSD.o ./bin/Devices.o ./bin/LoadSensor.o ./bin/ADS1256.o ./bin/bcm2835drv.o
-	$(CC) -shared ./bin/ClearPathMotorSD.o ./bin/Devices.o  ./bin/LoadSensor.o ./bin/ADS1256.o ./bin/bcm2835drv.o -o ./bin/_Devices.so  $(PYTHONLDLAGS) -Wl,--whole-archive  $(STEPGENLIB) -Wl,--no-whole-archive
+./controller/_Devices.so:./bin/ClearPathMotorSD.o ./bin/Devices.o ./bin/LoadSensor.o ./bin/ADS1256.o ./bin/bcm2835drv.o ./bin/Switch.o
+	$(CC) -shared ./bin/ClearPathMotorSD.o ./bin/Devices.o  ./bin/LoadSensor.o ./bin/ADS1256.o ./bin/bcm2835drv.o ./bin/Switch.o -o ./bin/_Devices.so  $(PYTHONLDLAGS) -Wl,--whole-archive  $(STEPGENLIB) -Wl,--no-whole-archive
 	cp ./bin/_Devices.so ./controller/_Devices.so
 	cp ./Devices/Devices.py ./controller/Devices.py
 
@@ -21,6 +21,9 @@ PYTHONLDLAGS = -L/usr/lib/python3.5/config-3.5m-arm-linux-gnueabihf -L/usr/lib -
 	$(CC) $(CFLAGS) -c -fPIC $<  -o $@  $(STEPGENLIB)
 
 ./bin/LoadSensor.o : ./LoadSensor/LoadSensor.cpp
+	$(CC) $(CFLAGS) -c -fPIC $<  -o $@  $(STEPGENLIB)
+
+./bin/Switch.o : ./Switch/Switch.cpp
 	$(CC) $(CFLAGS) -c -fPIC $<  -o $@  $(STEPGENLIB)
 
 ./bin/ADS1256.o : ./LoadSensor/ADS1256.c

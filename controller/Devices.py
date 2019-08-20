@@ -90,6 +90,8 @@ class _SwigNonDynamicMeta(type):
     __setattr__ = _swig_setattr_nondynamic_class_variable(type.__setattr__)
 
 
+import weakref
+
 class ClearPathMotorSD(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
@@ -177,6 +179,48 @@ class LoadSensor(object):
 
 # Register LoadSensor in _Devices:
 _Devices.LoadSensor_swigregister(LoadSensor)
+
+class SwitchCallback(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
+    __repr__ = _swig_repr
+    __swig_destroy__ = _Devices.delete_SwitchCallback
+
+    def run(self) -> "void":
+        return _Devices.SwitchCallback_run(self)
+
+    def __init__(self):
+        if self.__class__ == SwitchCallback:
+            _self = None
+        else:
+            _self = self
+        _Devices.SwitchCallback_swiginit(self, _Devices.new_SwitchCallback(_self, ))
+    def __disown__(self):
+        self.this.disown()
+        _Devices.disown_SwitchCallback(self)
+        return weakref.proxy(self)
+
+# Register SwitchCallback in _Devices:
+_Devices.SwitchCallback_swigregister(SwitchCallback)
+
+class Switch(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
+    __repr__ = _swig_repr
+
+    def __init__(self):
+        _Devices.Switch_swiginit(self, _Devices.new_Switch())
+    __swig_destroy__ = _Devices.delete_Switch
+
+    def startMonitor(self, pin: 'uint8_t', edge: 'bool', poll: 'long', cballback: 'SwitchCallback') -> "void":
+        return _Devices.Switch_startMonitor(self, pin, edge, poll, cballback)
+
+    def stopMonitor(self) -> "void":
+        return _Devices.Switch_stopMonitor(self)
+    Pin = property(_Devices.Switch_Pin_get, _Devices.Switch_Pin_set)
+    Edge = property(_Devices.Switch_Edge_get, _Devices.Switch_Edge_set)
+    Poll = property(_Devices.Switch_Poll_get, _Devices.Switch_Poll_set)
+
+# Register Switch in _Devices:
+_Devices.Switch_swigregister(Switch)
 
 
 
