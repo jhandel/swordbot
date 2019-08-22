@@ -3809,11 +3809,11 @@ fail:
 SWIGINTERN PyObject *_wrap_ClearPathMotorSD_moveInMM(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
-  long arg2 ;
+  double arg2 ;
   int arg3 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  long val2 ;
+  double val2 ;
   int ecode2 = 0 ;
   int val3 ;
   int ecode3 = 0 ;
@@ -3826,11 +3826,11 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_moveInMM(PyObject *SWIGUNUSEDPARM(se
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_moveInMM" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
   }
   arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
-  ecode2 = SWIG_AsVal_long(swig_obj[1], &val2);
+  ecode2 = SWIG_AsVal_double(swig_obj[1], &val2);
   if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_moveInMM" "', argument " "2"" of type '" "long""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_moveInMM" "', argument " "2"" of type '" "double""'");
   } 
-  arg2 = static_cast< long >(val2);
+  arg2 = static_cast< double >(val2);
   ecode3 = SWIG_AsVal_int(swig_obj[2], &val3);
   if (!SWIG_IsOK(ecode3)) {
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "ClearPathMotorSD_moveInMM" "', argument " "3"" of type '" "int""'");

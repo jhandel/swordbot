@@ -6,6 +6,7 @@ import json
 class Settings():
     def __init__(self, path):
         self.Path = path
+        self.settingsUpdated = lambda: print("saved")
         if(os.path.isfile(self.Path)):
             with open(self.Path) as json_data_file:
                 self.settings = json.load(json_data_file)
@@ -15,6 +16,7 @@ class Settings():
             "maxDistance" : "800",
             "stepsPer100MM" : "1000",
             "Speed" : "2000",
+            "jogSpeed" : "200",
             "homeSpeed" : "10",
             "targetZero" : "600",
             "targetPen" : "6.35",
@@ -24,7 +26,6 @@ class Settings():
             self.save()
         self.settings["homed"] = "false"
         self.settings["CommandedLocation"] = "-1"
-        self.settingsUpdated = lambda: print("saved")
 
     def save(self):
             with open(self.Path, 'w') as outfile:

@@ -54,6 +54,7 @@
 #include "./../bcm2835drv/bcm2835drv.h"
 #include <thread>
 #include <chrono>
+#include <math.h>
 
 
 /*		
@@ -124,11 +125,12 @@ void ClearPathMotorSD::stopMove()
 
 	The function will return true if the move was accepted
 */
-bool ClearPathMotorSD::moveInMM(long dist, int speed)
+bool ClearPathMotorSD::moveInMM(double dist, int speed)
 {
 	stopMove();
 	_TX=1;
-	CommandX = (abs(dist) * (StepsPer100mm/100));
+	std::cout << "Steps/1mm:" <<(StepsPer100mm/100) << std::endl;
+	CommandX = (fabs(dist) * (StepsPer100mm/100));
 	std::cout << "Command:" <<CommandX << std::endl;
 	_Vp= (speed * (StepsPer100mm/100));		
 	std::cout << "Speed:"<< _Vp << std::endl;			
@@ -200,7 +202,9 @@ void ClearPathMotorSD::processMovement(){
 }
 
 double ClearPathMotorSD::AxisLocation(){
-	return ((double)PulseLocation/StepsPer100mm * 100);
+	double location = (double)PulseLocation/StepsPer100mm * 100;
+	double specificLoc = floor(location*10000)/10000;
+	return specificLoc;
 }
 
 /*		
@@ -249,15 +253,15 @@ long ClearPathMotorSD::getCommandedPosition()
 */
 bool ClearPathMotorSD::commandDone()
 {
-	//std::cout << CommandX << " : ";
-	if(CommandX < 0) {
+	if(CommandX <= 0) {
 		if(motorActivity.joinable()){
 			motorActivity.join();
 		}
 		return true;
-	}
-	else
+	}else{
 		return false;
+	}
+		
 }
 
 

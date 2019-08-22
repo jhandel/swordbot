@@ -88,7 +88,7 @@ class ClearPathMotorSD
   }
   void attach(uint8_t, int, int, int);
   void attach(uint8_t, int, int, int, int);
-  bool moveInMM(long, int);
+  bool moveInMM(double, int);
   void enable();
   long getCommandedPosition();
   bool readHLFB();

@@ -1,1 +1,1 @@
-{"stepsPer100MM": "1000", "homed": "false", "maxDistance": "2500.0", "retract": "47.3", "acceleration": "11.045", "Speed": "99.2", "retractSpeed": "75.2", "homeSpeed": "66.5", "targetZero": "88.2", "targetPen": "99999.0", "CommandedLocation": "-1"}
+{"stepsPer100MM": "1000", "Speed": "2000", "retractSpeed": "1000", "acceleration": "2500", "targetPen": "6.35", "homed": "false", "homeSpeed": "10", "targetZero": "100.1", "jogSpeed": "200", "maxDistance": "800", "retract": "100", "CommandedLocation": "-1"}

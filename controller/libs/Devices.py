@@ -103,7 +103,7 @@ class ClearPathMotorSD(object):
     def attach(self, *args) -> "void":
         return _Devices.ClearPathMotorSD_attach(self, *args)
 
-    def moveInMM(self, arg2: 'long', arg3: 'int') -> "bool":
+    def moveInMM(self, arg2: 'double', arg3: 'int') -> "bool":
         return _Devices.ClearPathMotorSD_moveInMM(self, arg2, arg3)
 
     def enable(self) -> "void":
