@@ -34,11 +34,11 @@ class Machine():
         self.Motor.stepsPer100mm(self.Settings.getValue("stepsPer100MM"))
     
     def moveTo(self, mm, speed):
-        self.Motor.moveInMM(10000,2500)
+        self.Motor.moveInMM(mm,speed)
 
     def watchSwitch(self, action):
         switchCallback = LimitHandler(action).__disown__()
-        self.Switch.startMonitor(21,False,10,switchCallback)
+        self.Switch.startMonitor(21,False,100,switchCallback)
 
     def stopMove(self):
         self.Motor.stopMove()

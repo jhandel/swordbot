@@ -200,7 +200,7 @@ void ClearPathMotorSD::processMovement(){
 }
 
 double ClearPathMotorSD::AxisLocation(){
-	return ((double)PulseLocation/StepsPer100mm);
+	return ((double)PulseLocation/StepsPer100mm * 100);
 }
 
 /*		
@@ -250,7 +250,7 @@ long ClearPathMotorSD::getCommandedPosition()
 bool ClearPathMotorSD::commandDone()
 {
 	//std::cout << CommandX << " : ";
-	if(CommandX==0) {
+	if(CommandX < 0) {
 		if(motorActivity.joinable()){
 			motorActivity.join();
 		}

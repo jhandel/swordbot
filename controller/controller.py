@@ -222,9 +222,6 @@ class MainWindow(ThemedTk):
                         padding=5,
                         )
 
-##Events
-
-
 class MainApp():
     def __init__(self):
         self.settings = Settings("./config.json")
@@ -243,31 +240,32 @@ class MainApp():
         print("I stabbed")
     
     def homeMachine(self):
-        popup = tk.Toplevel()
-        ttk.Label(popup, text="Homing Machine").grid(row=0,column=0)
-        progress = 0
-        progress_var = tk.StringVar()
-        progress_var.set("0 mm")
-        progress_bar = ttk.Label(popup, textvariable=progress_var).grid(row=0,column=0)
-        popup.pack_slaves()
+        top = tk.Toplevel(self.window)
+        frame = ttk.Frame(top)
+        frame.pack()
+        myLabel = ttk.Label(frame, text='Homing Machine')
+        myLabel.pack()
+        myText = tk.StringVar()
+        myText.set("0 mm")
+        myEntryBox = ttk.Entry(frame, state="disable", textvariable=myText)
+        myEntryBox.pack()
+        top.pack_slaves()
         homed = False
         self.machine.watchSwitch(self.machine.stopMove)
         print("start moving")
         self.machine.moveTo(1000,100)
         while(not homed):
-            popup.update()
-            time.sleep(.01)
-            
+            top.update()
+            time.sleep(.1)
             location = "{:10.4f}".format(self.machine.Motor.AxisLocation()) + " mm"
             print(location)
-            progress_var.set(location)
+            myText.set(location)
             homed = self.machine.Motor.commandDone()
-        return 0
+            print(homed)
+        top.destroy()
+        self.machine.stopSwitch()
         self.machine.Motor.PulseLocation = 0
         self.settings.setValue("Homed","true")
-        self.machine.stopSwitch()
-        popup.destroy()
-
 
 if __name__ == '__main__':
     app = MainApp()
