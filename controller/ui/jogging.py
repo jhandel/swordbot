@@ -22,8 +22,8 @@ class JoggingFrame(ttk.Frame):
         self.titleLabel = ttk.Label(self, text="Jog to Target",  anchor=tk.CENTER)
         self.titleLabel.grid(row=0, column=0, columnspan=3)
 
-        self.setTargetButton = ttk.Button(self, text="Rapid Home",command=self.goHome)
-        self.setTargetButton.grid(row=1, column=0, columnspan=3, sticky="nsew")
+        self.rapidHomeBtn = ttk.Button(self, text="Rapid Home",command=self.goHome)
+        self.rapidHomeBtn.grid(row=1, column=0, columnspan=3, sticky="nsew")
 
         self.stepBtnFrame = ttk.Frame(self)
         self.stepBtnFrame.grid(row=2,column=0, columnspan=3)
@@ -55,9 +55,15 @@ class JoggingFrame(ttk.Frame):
         self.jogging = False
 
 
-    def setLocation(self):
+    def syncTab(self):
         location = "{:10.4f}".format(self.machine.Motor.AxisLocation()) + " mm"
         self.locVar.set(location)
+        if(not self.settings.getValue("homed")):
+            self.setTargetButton.configure(state='disable')
+            self.rapidHomeBtn.configure(state='disable')
+        else:
+            self.setTargetButton.configure(state='normal')
+            self.rapidHomeBtn.configure(state='normal')
     
     def setTargetZero(self):
         self.settings.setValue("targetZero", self.machine.Motor.AxisLocation())

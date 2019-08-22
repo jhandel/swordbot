@@ -6,11 +6,13 @@ from ttkwidgets import ScaleEntry
 from ttkwidgets.autocomplete import AutocompleteCombobox
 from tkinter import messagebox
 from PIL import Image
+import time
 
 class ConfigFrame(ttk.Frame):
-    def __init__(self,master,settings):
+    def __init__(self,master,settings, machine):
         self.master = master
         self.settings = settings
+        self.machine = machine
         ttk.Frame.__init__(self, master, width = 780, height = 400)
         self.columnconfigure(1, weight=1)
         self.columnconfigure(0, weight=0)
@@ -91,7 +93,7 @@ class ConfigFrame(ttk.Frame):
         self.retractSpeedLabel.grid(row=9, column=0,sticky="e")
         self.retractSpeedVar = tk.StringVar()
         self.retractSpeedVar.set(self.settings.getValue("retractSpeed"))
-        self.retractSpeedEntry = ttk.Entry(self, width=35, font=('Helvetica', 16),validate='key', validatecommand=self.vcmd, textvariable=self.retractSpeedVar)
+        self.retractSpeedEntry = ttk.Entry(self, width=35, font=('Helvetica', 16), validate='key', validatecommand=self.vcmd, textvariable=self.retractSpeedVar)
         self.retractSpeedEntry.grid(row=9, column=1,sticky="w")
         self.retractSpeedEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.retractSpeedEntry, self.retractSpeedVar))
 
@@ -106,7 +108,7 @@ class ConfigFrame(ttk.Frame):
         self.saveSettingsBtn = ttk.Button(self, text="Save Config",command=self.saveConfig)
         self.saveSettingsBtn.grid(row=11, column=0, columnspan=2, sticky="nsew")
 
-        self.homeBtn = ttk.Button(self, text="Home Machine",command=self.saveConfig)
+        self.homeBtn = ttk.Button(self, text="Home Machine",command=self.homeMachine)
         self.homeBtn.grid(row=11, column=3, sticky="nsew")
 
         self.numPadFrame = ttk.Frame(self)
@@ -176,10 +178,10 @@ class ConfigFrame(ttk.Frame):
         self.settings.setValue("acceleration",self.accelVar.get())
         self.settings.setValue("stepsPer100MM",self.stepsVar.get())
         self.settings.save()
-        self.machine.syncSettings()
+        self.machine.updateSettings()
         messagebox.showinfo("Notification", "Configurations Saved")
 
-    def syncSettings(self):
+    def syncTab(self):
         self.retractSpeedVar.set(self.settings.getValue("retractSpeed"))
         self.retractVar.set(self.settings.getValue("retract"))
         self.penVar.set(self.settings.getValue("targetPen"))
@@ -189,3 +191,14 @@ class ConfigFrame(ttk.Frame):
         self.limitVar.set(self.settings.getValue("maxDistance"))
         self.accelVar.set(self.settings.getValue("acceleration"))
         self.stepsVar.set(self.settings.getValue("stepsPer100MM"))
+
+    def homeMachine(self):
+        homed = False
+        self.machine.watchSwitch(self.machine.stopMove)
+        self.machine.moveTo(self.settings.getValue("maxDistance") *-1,int(self.settings.getValue("homeSpeed")))
+        while(not homed):
+            time.sleep(.1)
+            homed = self.machine.Motor.commandDone()
+        self.machine.stopSwitch()
+        self.machine.Motor.PulseLocation = 0
+        self.settings.setValue("homed",True)

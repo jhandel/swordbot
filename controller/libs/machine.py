@@ -24,7 +24,6 @@ class Machine():
         self.Sensor = sensor
         self.Switch = switch
         self.Settings = settings
-        self.Settings.settingsUpdated = lambda: self.updateSettings()
         self.updateSettings()
 
     def updateSettings(self):
@@ -45,9 +44,20 @@ class Machine():
 
     def stopSwitch(self):
         self.Switch.stopMonitor()
+    
+    def startSensor(self):
+        self.Sensor.startRead(100000,1)
 
     def stopSensor(self):
         self.Sensor.stopRead()
+
+    def getReadings(self):
+        count = self.Sensor.CurrentRead
+        results = [[],[]]
+        for x in range(0, count):
+            results[0].append(self.Sensor.TimeOfReading(x))
+            results[1].append(self.Sensor.ReadingAt(x))
+        return results
     
     def enable(self):
         self.Motor.enable()

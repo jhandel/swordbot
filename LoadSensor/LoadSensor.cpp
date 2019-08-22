@@ -84,10 +84,8 @@ void LoadSensor::processReads(){
     UBYTE buf[3] = {0,0,0};
     CurrentRead = 0;
     auto start = std::chrono::high_resolution_clock::now();
-    printf("start reading ...\r\n"); 
     while(CurrentRead < RequestedRead){
         ADS1256_WaitDRDY();
-        printf("reading ...\r\n"); 
         auto elapsed = std::chrono::high_resolution_clock::now() - start;
         ReadTimes[CurrentRead] = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
         buf[0] = DEV_SPI_ReadByte();
@@ -108,4 +106,5 @@ void LoadSensor::processReads(){
     DEV_SPI_WriteByte(CMD_SDATAC);
     DEV_Digital_Write(DEV_CS_PIN, 1);
     //ADC[i]*5.0/0x7fffff
+    printf("readings completed");
 }

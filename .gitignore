@@ -1,5 +1,6 @@
 bin/*
 test*.txt
+run*.csv
 __pycache__
 
 !placeholder.txt

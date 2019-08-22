@@ -37,17 +37,18 @@ class MainWindow(ThemedTk):
         self.grid_propagate(0)
 
     def loadTestFrame(self):
-        self.testingFrame = TestFrame(self.tabs)
+        self.testingFrame = TestFrame(self.tabs, self.settings, self.machine)
     
     def loadConfigFrame(self):
-        self.configFrame = ConfigFrame(self.tabs, self.settings)
+        self.configFrame = ConfigFrame(self.tabs, self.settings, self.machine)
     
     def loadJoggingFrame(self):
         self.joggingFrame = JoggingFrame(self.tabs, self.settings, self.machine)
 
     def tabUpdate(self, event):
-        self.configFrame.syncSettings()
-        self.joggingFrame.setLocation()
+        self.configFrame.syncTab()
+        self.joggingFrame.syncTab()
+        self.testingFrame.syncTab()
     
     def setStyles(self):
         style = ttk.Style(self)
