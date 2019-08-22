@@ -123,7 +123,7 @@ class MainWindow(ThemedTk):
         self.homeSpeedLabel.grid(row=5, column=0,sticky="e")
         self.homeSpeedVar = tk.StringVar()
         self.homeSpeedVar.set(self.settings.getValue("homeSpeed"))
-        self.homeSpeedEntry = ttk.Entry(self.configFrame, width=35, validate='key', validatecommand=self.vcmd, textvariable=self.homeSpeedVar)
+        self.homeSpeedEntry = ttk.Entry(self.configFrame, width=35, font=('Helvetica', 17),validate='key', validatecommand=self.vcmd, textvariable=self.homeSpeedVar)
         self.homeSpeedEntry.grid(row=5, column=1,sticky="w")
         self.homeSpeedEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.homeSpeedEntry, self.homeSpeedVar))
 
@@ -131,7 +131,7 @@ class MainWindow(ThemedTk):
         self.surfaceLabel.grid(row=6, column=0,sticky="e")
         self.surfaceVar = tk.StringVar()
         self.surfaceVar.set(self.settings.getValue("targetZero"))
-        self.surfaceEntry = ttk.Entry(self.configFrame, width=35, validate='key', validatecommand=self.vcmd, textvariable=self.surfaceVar)
+        self.surfaceEntry = ttk.Entry(self.configFrame, width=35, font=('Helvetica', 17),validate='key', validatecommand=self.vcmd, textvariable=self.surfaceVar)
         self.surfaceEntry.grid(row=6, column=1,sticky="w")
         self.surfaceEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.surfaceEntry, self.surfaceVar))
 
@@ -139,7 +139,7 @@ class MainWindow(ThemedTk):
         self.penLabel.grid(row=7, column=0,sticky="e")
         self.penVar = tk.StringVar()
         self.penVar.set(self.settings.getValue("targetPen"))
-        self.penEntry = ttk.Entry(self.configFrame, width=35, validate='key', validatecommand=self.vcmd, textvariable=self.penVar)
+        self.penEntry = ttk.Entry(self.configFrame, width=35, font=('Helvetica', 17),validate='key', validatecommand=self.vcmd, textvariable=self.penVar)
         self.penEntry.grid(row=7, column=1,sticky="w")
         self.penEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.penEntry, self.penVar))
 
@@ -147,7 +147,7 @@ class MainWindow(ThemedTk):
         self.retractLabel.grid(row=8, column=0,sticky="e")
         self.retractVar = tk.StringVar()
         self.retractVar.set(self.settings.getValue("retract"))
-        self.retractEntry = ttk.Entry(self.configFrame, width=35, validate='key', validatecommand=self.vcmd, textvariable=self.retractVar)
+        self.retractEntry = ttk.Entry(self.configFrame, width=35, font=('Helvetica', 17),validate='key', validatecommand=self.vcmd, textvariable=self.retractVar)
         self.retractEntry.grid(row=8, column=1,sticky="w")
         self.retractEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.retractEntry, self.retractVar))
 
@@ -155,15 +155,18 @@ class MainWindow(ThemedTk):
         self.retractSpeedLabel.grid(row=9, column=0,sticky="e")
         self.retractSpeedVar = tk.StringVar()
         self.retractSpeedVar.set(self.settings.getValue("retractSpeed"))
-        self.retractSpeedEntry = ttk.Entry(self.configFrame, width=35, validate='key', validatecommand=self.vcmd, textvariable=self.retractSpeedVar)
+        self.retractSpeedEntry = ttk.Entry(self.configFrame, width=35, font=('Helvetica', 17),validate='key', validatecommand=self.vcmd, textvariable=self.retractSpeedVar)
         self.retractSpeedEntry.grid(row=9, column=1,sticky="w")
         self.retractSpeedEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.retractSpeedEntry, self.retractSpeedVar))
 
         self.saveSettingsBtn = ttk.Button(self.configFrame, text="Save Config",command=self.saveConfig)
-        self.saveSettingsBtn.grid(row=10, column=0, columnspan=3, sticky="nsew")
+        self.saveSettingsBtn.grid(row=10, column=0, columnspan=2, sticky="nsew")
+
+        self.homeBtn = ttk.Button(self.configFrame, text="Home Machine",command=self.saveConfig)
+        self.homeBtn.grid(row=10, column=3, sticky="nsew")
 
         self.numPadFrame = ttk.Frame(self.configFrame)
-        self.numPadFrame.grid(row=1, column=3, rowspan=9, sticky="nsew")
+        self.numPadFrame.grid(row=1, column=3, rowspan=8, sticky="nsew")
         
         self.num7Btn = ttk.Button(self.numPadFrame, text="7",command=lambda: self.numPadCallback(7))
         self.num7Btn.grid(row=0, column=0, sticky="nsew")
@@ -216,41 +219,56 @@ class MainWindow(ThemedTk):
                         anchor=tk.CENTER
                         )
         style.configure('TEntry',
-                        padding=11,
+                        padding=5,
                         )
 
 ##Events
-def doStab():
-    x = ClearPathMotorSD()
-    time.sleep(.25)
-    load = LoadSensor()
-    x.attach(24,25,23)
-    x.setMaxVelInMM(5000)
-    x.setAccelInMM(4615)
-    x.setDeccelInMM(4615)
-    x.stepsPer100mm(1000)
-    x.disable()
-    time.sleep(.5)
-    x.enable()
-    m = Machine(x,load)
-    load.startRead(15000,1)
-    x.moveInMM(1000,2500)
-    while not x.commandDone():
-        time.sleep(.01)
-    m.Stop()
-    x.disable()
-    count = load.CurrentRead
-    print("reads done:" + str(count))
-    filenametime = time.time()
-     
-    f = open("test"+str(filenametime)+".txt", "a")
-    for x in range(0, count):
-        f.write(str(load.ReadingAt(x)*5.0/0x7fffff) + "," + str(load.TimeOfReading(x)) + '\n')
-    f.close()
+
+
+class MainApp():
+    def __init__(self):
+        self.settings = Settings("./config.json")
+        self.machine = Machine(self.settings)
+        self.window = MainWindow(self.settings)
+        self.window.runBtn.config(command= self.doStab)
+        self.window.homeBtn.config(command= self.homeMachine)
+
+    def __del__(self):
+        self.machine.disable()
+
+    def runUI(self):
+        self.window.mainloop()
+
+    def doStab(self):
+        print("I stabbed")
     
+    def homeMachine(self):
+        popup = tk.Toplevel()
+        ttk.Label(popup, text="Homing Machine").grid(row=0,column=0)
+        progress = 0
+        progress_var = tk.StringVar()
+        progress_var.set("0 mm")
+        progress_bar = ttk.Label(popup, textvariable=progress_var).grid(row=0,column=0)
+        popup.pack_slaves()
+        homed = False
+        self.machine.watchSwitch(self.machine.stopMove)
+        print("start moving")
+        self.machine.moveTo(1000,100)
+        while(not homed):
+            popup.update()
+            time.sleep(.01)
+            
+            location = "{:10.4f}".format(self.machine.Motor.AxisLocation()) + " mm"
+            print(location)
+            progress_var.set(location)
+            homed = self.machine.Motor.commandDone()
+        return 0
+        self.machine.Motor.PulseLocation = 0
+        self.settings.setValue("Homed","true")
+        self.machine.stopSwitch()
+        popup.destroy()
+
 
 if __name__ == '__main__':
-    settings = Settings("./config.json")
-    window = MainWindow(settings)
-    window.runBtn.config(command=doStab)
-    window.mainloop()
+    app = MainApp()
+    app.runUI()

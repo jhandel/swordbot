@@ -55,34 +55,6 @@
 #include <thread>
 #include <chrono>
 
-/*		
-	This is the one pin attach function.  It asociates the passed number, as this motors Step Pin
-*/
-void ClearPathMotorSD::attach(int BPin)
-{
-	DEV_ModuleInit();
-	PinA=0;
-	PinB=BPin;
-	PinE=0;
-	PinH=0;
-	DEV_pin_config(PinB, BCM2835_GPIO_FSEL_OUTP);
-}
-
-/*		
-	This is the two pin attach function.  
-	It asociates the 1st number, as this motors Direction Pin
-	and the 2nd number with the Step Pin
-*/
-void ClearPathMotorSD::attach(int APin, int BPin)
-{ 
-	DEV_ModuleInit();
-	PinA=APin;
-	PinB=BPin;
-	PinE=0;
-	PinH=0;
-	DEV_pin_config(PinA, BCM2835_GPIO_FSEL_OUTP);
-	DEV_pin_config(PinB, BCM2835_GPIO_FSEL_OUTP);
-}
 
 /*		
 	This is the three pin attach function.  
@@ -90,13 +62,14 @@ void ClearPathMotorSD::attach(int APin, int BPin)
 	the 2nd number with the Step Pin,
 	and the 3rd number with the Enable Pin
 */
-void ClearPathMotorSD::attach(int APin, int BPin, int EPin)
+void ClearPathMotorSD::attach(uint8_t fowardDirectionLevel, int APin, int BPin, int EPin)
 {
 	DEV_ModuleInit();
 	PinA=APin;
 	PinB=BPin;
 	PinE=EPin;
 	PinH=0;
+	DirForwardPinLevel = fowardDirectionLevel;
 	DEV_pin_config(PinA, BCM2835_GPIO_FSEL_OUTP);
 	DEV_pin_config(PinB, BCM2835_GPIO_FSEL_OUTP);
 	DEV_pin_config(EPin, BCM2835_GPIO_FSEL_OUTP);
@@ -109,13 +82,14 @@ void ClearPathMotorSD::attach(int APin, int BPin, int EPin)
 	the 3rd number with the Enable Pin,
 	and the 4th number as the HLFB Pin
 */
-void ClearPathMotorSD::attach(int APin, int BPin, int EPin, int HPin)
+void ClearPathMotorSD::attach(uint8_t fowardDirectionLevel, int APin, int BPin, int EPin, int HPin)
 {
 	DEV_ModuleInit();
 	PinA=APin;
 	PinB=BPin;
 	PinE=EPin;
 	PinH=HPin;
+	DirForwardPinLevel = fowardDirectionLevel;
 	DEV_pin_config(PinA, BCM2835_GPIO_FSEL_OUTP);
 	DEV_pin_config(PinB, BCM2835_GPIO_FSEL_OUTP);
 	DEV_pin_config(EPin, BCM2835_GPIO_FSEL_OUTP);
@@ -169,7 +143,10 @@ bool ClearPathMotorSD::moveInMM(long dist, int speed)
 	{
 		if(PinA!=0)
 		{
-			DEV_Digital_Write(PinA,HIGH);
+			if (DirForwardPinLevel == LOW)
+				DEV_Digital_Write(PinA,HIGH);
+			else
+				DEV_Digital_Write(PinA,LOW);
 			_direction=true;
 		}
 	}
@@ -177,7 +154,10 @@ bool ClearPathMotorSD::moveInMM(long dist, int speed)
 	{
 		if(PinA!=0)
 		{
-			DEV_Digital_Write(PinA,LOW);
+			if (DirForwardPinLevel == LOW)
+				DEV_Digital_Write(PinA,LOW);
+			else
+				DEV_Digital_Write(PinA,HIGH);
 			_direction=false;
 		}
 	}
@@ -210,7 +190,17 @@ void ClearPathMotorSD::processMovement(){
 		DEV_Delay_us(pw - 2);
 		_TX = _TX + (pw);
 		CommandX --;
+		if(!_direction)
+		{
+			PulseLocation++;
+		}else{
+			PulseLocation--;
+		}
 	}
+}
+
+double ClearPathMotorSD::AxisLocation(){
+	return ((double)PulseLocation/StepsPer100mm);
 }
 
 /*		

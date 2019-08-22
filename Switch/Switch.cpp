@@ -16,12 +16,16 @@
 	 
 	 DEV_pin_config(Pin, BCM2835_GPIO_FSEL_INPT);
 	 DEV_pin_SetPud(Pin, BCM2835_GPIO_PUD_UP);
+	 printf("pins set\r\n");
 
 	 delete _callback;
 	 _callback = 0;
 	 _callback = cballback;
+	 printf("callback set\r\n");
 	 monitoring = true;
+     if(switchMonitor.joinable()) switchMonitor.join();
 	 switchMonitor = std::thread([=]() {
+	 	printf("thread started\r\n");
         this->monitorPin();
     });
  }

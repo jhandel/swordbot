@@ -78,16 +78,16 @@ class ClearPathMotorSD
     CommandX=0;
     AbsPosition=0;
     StepsPer100mm = 10000;
+    PulseLocation=0;
+    DirForwardPinLevel = 1;
   }
   ~ClearPathMotorSD(){
     CommandX = 0;
     if(motorActivity.joinable()) motorActivity.join();
     DEV_ModuleExit();
   }
-  void attach(int);
-  void attach(int, int);
-  void attach(int, int, int);
-  void attach(int, int, int, int);
+  void attach(uint8_t, int, int, int);
+  void attach(uint8_t, int, int, int, int);
   bool moveInMM(long, int);
   void enable();
   long getCommandedPosition();
@@ -99,6 +99,8 @@ class ClearPathMotorSD
   void setDeccelInMM(long);
   bool commandDone();
   void disable();
+  double AxisLocation();
+  
 
   
   uint8_t PinA;
@@ -108,7 +110,10 @@ class ClearPathMotorSD
   bool Enabled; 
   int moveStateX;
   volatile long AbsPosition;
-  
+  long PulseLocation;
+  uint8_t DirForwardPinLevel;
+
+
   private:
   void processMovement();
   volatile long CommandX;
@@ -131,6 +136,7 @@ class ClearPathMotorSD
  float _Ts;        // Time at steady state
  float _Vp;				// pulses at steady state
  int pulseWidth;
+
 
 };
 #endif

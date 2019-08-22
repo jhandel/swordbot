@@ -27,7 +27,7 @@ def main():
     x = ClearPathMotorSD()
     time.sleep(.25)
     load = LoadSensor()
-    x.attach(24,25,23)
+    x.attach(0,24,25,23)
     x.setMaxVelInMM(5000)
     x.setAccelInMM(4615)
     x.setDeccelInMM(4615)

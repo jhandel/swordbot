@@ -135,6 +135,9 @@ class ClearPathMotorSD(object):
 
     def disable(self) -> "void":
         return _Devices.ClearPathMotorSD_disable(self)
+
+    def AxisLocation(self) -> "double":
+        return _Devices.ClearPathMotorSD_AxisLocation(self)
     PinA = property(_Devices.ClearPathMotorSD_PinA_get, _Devices.ClearPathMotorSD_PinA_set)
     PinB = property(_Devices.ClearPathMotorSD_PinB_get, _Devices.ClearPathMotorSD_PinB_set)
     PinE = property(_Devices.ClearPathMotorSD_PinE_get, _Devices.ClearPathMotorSD_PinE_set)
@@ -142,6 +145,8 @@ class ClearPathMotorSD(object):
     Enabled = property(_Devices.ClearPathMotorSD_Enabled_get, _Devices.ClearPathMotorSD_Enabled_set)
     moveStateX = property(_Devices.ClearPathMotorSD_moveStateX_get, _Devices.ClearPathMotorSD_moveStateX_set)
     AbsPosition = property(_Devices.ClearPathMotorSD_AbsPosition_get, _Devices.ClearPathMotorSD_AbsPosition_set)
+    PulseLocation = property(_Devices.ClearPathMotorSD_PulseLocation_get, _Devices.ClearPathMotorSD_PulseLocation_set)
+    DirForwardPinLevel = property(_Devices.ClearPathMotorSD_DirForwardPinLevel_get, _Devices.ClearPathMotorSD_DirForwardPinLevel_set)
 
 # Register ClearPathMotorSD in _Devices:
 _Devices.ClearPathMotorSD_swigregister(ClearPathMotorSD)
