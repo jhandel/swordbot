@@ -68,11 +68,16 @@ Info:
 ******************************************************************************/
 void ADS1256_WriteReg(UBYTE Reg, UBYTE data)
 {
-    DEV_Digital_Write(DEV_CS_PIN, 0);
-    DEV_SPI_WriteByte(CMD_WREG | Reg);
-    DEV_SPI_WriteByte(0x00);
-    DEV_SPI_WriteByte(data);
-    DEV_Digital_Write(DEV_CS_PIN, 1);
+    UBYTE readVal = data + 1;
+    while(readVal != data){
+        DEV_Digital_Write(DEV_CS_PIN, 0);
+        DEV_SPI_WriteByte(CMD_WREG | Reg);
+        DEV_SPI_WriteByte(0x00);
+        DEV_SPI_WriteByte(data);
+        DEV_Digital_Write(DEV_CS_PIN, 1);
+        DEV_Delay_us(100);
+        readVal = ADS1256_Read_data(Reg);
+    }
 }
 
 /******************************************************************************
@@ -139,7 +144,7 @@ void ADS1256_ConfigADC(ADS1256_GAIN gain, ADS1256_DRATE drate)
 {
     ADS1256_WaitDRDY();
     UBYTE buf[4] = {0,0,0,0};
-    buf[0] = (0<<3) | (1<<2) | (0<<1);
+    buf[0] = (0<<3) | (1<<2) | (2<<1);
     buf[1] = 0x08;
     buf[2] = (0<<5) | (0<<3) | (gain<<0);
     buf[3] = ADS1256_DRATE_E[drate];
@@ -154,6 +159,12 @@ void ADS1256_ConfigADC(ADS1256_GAIN gain, ADS1256_DRATE drate)
     DEV_SPI_WriteByte(buf[3]);
     DEV_Digital_Write(DEV_CS_PIN, 1);
     DEV_Delay_ms(1);
+    ADS1256_WriteCmd(CMD_SELFCAL);
+    while(true){
+        if(DEV_Digital_Read(DEV_DRDY_PIN) == 0){
+                return;
+        }
+    }
 }
 
 /******************************************************************************
@@ -172,6 +183,7 @@ void ADS1256_SetChannal(UBYTE Channal)
     }
     ADS1256_WriteReg(REG_MUX, (Channal<<4) | (1<<3));
     CurrentChannal = Channal;
+    printf("set single channal\r\n");
 } 
 
 void ADS1256_SetDiffChannal(UBYTE Channal)
@@ -192,6 +204,8 @@ void ADS1256_SetDiffChannal(UBYTE Channal)
         ADS1256_WriteReg(REG_MUX, (6 << 4) | 7); 	//DiffChannal   AIN6-AIN7
     }
     CurrentChannal = Channal;
+    
+    printf("set diff channal\r\n");
 }
 
 /******************************************************************************
@@ -230,14 +244,24 @@ UBYTE ADS1256_init(void)
     DEV_SPI_WriteByte(CMD_SDATAC);
     DEV_Delay_ms(13);
     DEV_Digital_Write(DEV_CS_PIN, 1);
+    UBYTE chipId = ADS1256_ReadChipID();
     if(ADS1256_ReadChipID() == 3){
         printf("ID Read success \r\n");
+        while (chipId) {
+            if (chipId & 1)
+                printf("1");
+            else
+                printf("0");
+
+            chipId >>= 1;
+        }
+        printf("\r\n");
     }
     else{
         printf("ID Read failed\r\n");
         return 1;
     }
-    ADS1256_ConfigADC(ADS1256_GAIN_1, ADS1256_15SPS);
+    ADS1256_ConfigADC(ADS1256_GAIN_1, ADS1256_3750SPS);
     return 0;
 }
 
@@ -253,8 +277,10 @@ UDOUBLE ADS1256_Read_ADC_Data(void)
     ADS1256_WaitDRDY();
     DEV_Digital_Write(DEV_CS_PIN, 0);
     DEV_Delay_us(7);
+    DEV_SPI_WriteByte(CMD_SDATAC);
+    DEV_Delay_ms(1);
     DEV_SPI_WriteByte(CMD_RDATA);
-    DEV_Delay_us(13);
+    DEV_Delay_ms(8);
     buf[0] = DEV_SPI_ReadByte();
     DEV_Delay_us(3);
     buf[1] = DEV_SPI_ReadByte();
@@ -286,9 +312,9 @@ UDOUBLE ADS1256_GetChannalValue(UBYTE Channel)
         }
         ADS1256_SetChannal(Channel);
         ADS1256_WriteCmd(CMD_SYNC);
-        DEV_Delay_us(10);
+        DEV_Delay_ms(1);
         ADS1256_WriteCmd(CMD_WAKEUP);
-        DEV_Delay_us(10);
+        DEV_Delay_ms(10);
         Value = ADS1256_Read_ADC_Data();
     }
     else{

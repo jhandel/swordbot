@@ -159,8 +159,14 @@ class LoadSensor(object):
         _Devices.LoadSensor_swiginit(self, _Devices.new_LoadSensor())
     __swig_destroy__ = _Devices.delete_LoadSensor
 
-    def startRead(self, *args) -> "void":
-        return _Devices.LoadSensor_startRead(self, *args)
+    def setGainAndRate(self, arg2: 'ADS1256_DRATE', arg3: 'ADS1256_GAIN') -> "void":
+        return _Devices.LoadSensor_setGainAndRate(self, arg2, arg3)
+
+    def startRead(self, arg2: 'long', arg3: 'uint8_t') -> "void":
+        return _Devices.LoadSensor_startRead(self, arg2, arg3)
+
+    def singleMeasurement(self, arg2: 'uint8_t') -> "uint32_t":
+        return _Devices.LoadSensor_singleMeasurement(self, arg2)
 
     def currentlyReading(self) -> "bool":
         return _Devices.LoadSensor_currentlyReading(self)
@@ -179,12 +185,94 @@ class LoadSensor(object):
     Channel = property(_Devices.LoadSensor_Channel_get, _Devices.LoadSensor_Channel_set)
     CurrentRead = property(_Devices.LoadSensor_CurrentRead_get, _Devices.LoadSensor_CurrentRead_set)
     RequestedRead = property(_Devices.LoadSensor_RequestedRead_get, _Devices.LoadSensor_RequestedRead_set)
+
+    def SetMode(self, arg2: 'uint8_t') -> "void":
+        return _Devices.LoadSensor_SetMode(self, arg2)
     DateRate = property(_Devices.LoadSensor_DateRate_get, _Devices.LoadSensor_DateRate_set)
     Gain = property(_Devices.LoadSensor_Gain_get, _Devices.LoadSensor_Gain_set)
 
 # Register LoadSensor in _Devices:
 _Devices.LoadSensor_swigregister(LoadSensor)
 
+ADS1256_GAIN_1 = _Devices.ADS1256_GAIN_1
+ADS1256_GAIN_2 = _Devices.ADS1256_GAIN_2
+ADS1256_GAIN_4 = _Devices.ADS1256_GAIN_4
+ADS1256_GAIN_8 = _Devices.ADS1256_GAIN_8
+ADS1256_GAIN_16 = _Devices.ADS1256_GAIN_16
+ADS1256_GAIN_32 = _Devices.ADS1256_GAIN_32
+ADS1256_GAIN_64 = _Devices.ADS1256_GAIN_64
+ADS1256_30000SPS = _Devices.ADS1256_30000SPS
+ADS1256_15000SPS = _Devices.ADS1256_15000SPS
+ADS1256_7500SPS = _Devices.ADS1256_7500SPS
+ADS1256_3750SPS = _Devices.ADS1256_3750SPS
+ADS1256_2000SPS = _Devices.ADS1256_2000SPS
+ADS1256_1000SPS = _Devices.ADS1256_1000SPS
+ADS1256_500SPS = _Devices.ADS1256_500SPS
+ADS1256_100SPS = _Devices.ADS1256_100SPS
+ADS1256_60SPS = _Devices.ADS1256_60SPS
+ADS1256_50SPS = _Devices.ADS1256_50SPS
+ADS1256_30SPS = _Devices.ADS1256_30SPS
+ADS1256_25SPS = _Devices.ADS1256_25SPS
+ADS1256_15SPS = _Devices.ADS1256_15SPS
+ADS1256_10SPS = _Devices.ADS1256_10SPS
+ADS1256_5SPS = _Devices.ADS1256_5SPS
+ADS1256_2d5SPS = _Devices.ADS1256_2d5SPS
+ADS1256_DRATE_MAX = _Devices.ADS1256_DRATE_MAX
+REG_STATUS = _Devices.REG_STATUS
+REG_MUX = _Devices.REG_MUX
+REG_ADCON = _Devices.REG_ADCON
+REG_DRATE = _Devices.REG_DRATE
+REG_IO = _Devices.REG_IO
+REG_OFC0 = _Devices.REG_OFC0
+REG_OFC1 = _Devices.REG_OFC1
+REG_OFC2 = _Devices.REG_OFC2
+REG_FSC0 = _Devices.REG_FSC0
+REG_FSC1 = _Devices.REG_FSC1
+REG_FSC2 = _Devices.REG_FSC2
+CMD_WAKEUP = _Devices.CMD_WAKEUP
+CMD_RDATA = _Devices.CMD_RDATA
+CMD_RDATAC = _Devices.CMD_RDATAC
+CMD_SDATAC = _Devices.CMD_SDATAC
+CMD_RREG = _Devices.CMD_RREG
+CMD_WREG = _Devices.CMD_WREG
+CMD_SELFCAL = _Devices.CMD_SELFCAL
+CMD_SELFOCAL = _Devices.CMD_SELFOCAL
+CMD_SELFGCAL = _Devices.CMD_SELFGCAL
+CMD_SYSOCAL = _Devices.CMD_SYSOCAL
+CMD_SYSGCAL = _Devices.CMD_SYSGCAL
+CMD_SYNC = _Devices.CMD_SYNC
+CMD_STANDBY = _Devices.CMD_STANDBY
+CMD_RESET = _Devices.CMD_RESET
+
+def ADS1256_init() -> "UBYTE":
+    return _Devices.ADS1256_init()
+
+def ADS1256_SetMode(Mode: 'UBYTE') -> "void":
+    return _Devices.ADS1256_SetMode(Mode)
+
+def ADS1256_ConfigADC(gain: 'ADS1256_GAIN', drate: 'ADS1256_DRATE') -> "void":
+    return _Devices.ADS1256_ConfigADC(gain, drate)
+
+def ADS1256_GetChannalValue(Channel: 'UBYTE') -> "UDOUBLE":
+    return _Devices.ADS1256_GetChannalValue(Channel)
+
+def ADS1256_GetAll(ADC_Value: 'UDOUBLE *') -> "void":
+    return _Devices.ADS1256_GetAll(ADC_Value)
+
+def ADS1256_GetContinousSingle(ADC_Value: 'UDOUBLE *', Channel: 'UBYTE', count: 'int') -> "void":
+    return _Devices.ADS1256_GetContinousSingle(ADC_Value, Channel, count)
+
+def ADS1256_WaitDRDY() -> "void":
+    return _Devices.ADS1256_WaitDRDY()
+
+def ADS1256_SetChannal(arg1: 'UBYTE') -> "void":
+    return _Devices.ADS1256_SetChannal(arg1)
+
+def ADS1256_WriteCmd(Cmd: 'UBYTE') -> "void":
+    return _Devices.ADS1256_WriteCmd(Cmd)
+
+def ADS1256_ReadChipID() -> "UBYTE":
+    return _Devices.ADS1256_ReadChipID()
 class SwitchCallback(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')
     __repr__ = _swig_repr
@@ -206,6 +294,8 @@ class SwitchCallback(object):
 
 # Register SwitchCallback in _Devices:
 _Devices.SwitchCallback_swigregister(SwitchCallback)
+cvar = _Devices.cvar
+ADS1256_DRATE_E = cvar.ADS1256_DRATE_E
 
 class Switch(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc='The membership flag')

@@ -11,36 +11,37 @@
 
 void LoadSensor::startRead(long readCount, uint8_t channel)
 {
-    startRead(readCount, channel, ADS1256_7500SPS, ADS1256_GAIN_1);
-}
-void LoadSensor::startRead(long readCount, uint8_t channel, ADS1256_DRATE drate)
-{
-    startRead(readCount,  channel, drate, ADS1256_GAIN_1);
-}
-void LoadSensor::startRead(long readCount, uint8_t channel, ADS1256_DRATE drate, ADS1256_GAIN gain)
-{
 
     if(readCount > bufferSize){
         RequestedRead = bufferSize;
     }else{
         RequestedRead = readCount;
     }
+
     Channel = channel;
-    if(Channel>=8){
+
+    if(ScanMode == 0){// 0  Single-ended input  8 channel1 Differential input  4 channe 
+        if(Channel>=8){
             return;
+        }
+        ADS1256_SetChannal(Channel);
     }
-    ADS1256_ConfigADC(gain,drate);
-    DEV_Delay_ms(10);
-    ADS1256_SetChannal(Channel);
+    else{
+        if(Channel>=4){
+            return;
+        }
+        ADS1256_SetDiffChannal(Channel);
+        printf("differental reading\r\n");
+    }
     ADS1256_WriteCmd(CMD_SYNC);
     DEV_Delay_us(10);
     ADS1256_WriteCmd(CMD_WAKEUP);
     DEV_Delay_us(10);
-    DEV_Digital_Write(DEV_CS_PIN, 0);
     ADS1256_WaitDRDY();
+    
+    DEV_Digital_Write(DEV_CS_PIN, 0);
     DEV_Delay_us(8);
     DEV_SPI_WriteByte(CMD_RDATAC);       
-    DEV_Delay_us(8);
 
     loadSensorThread = std::thread([=]() {
         this->processReads();
@@ -80,12 +81,23 @@ long LoadSensor::TimeOfReading(long index)
     return 0;
 }
 
+uint32_t LoadSensor::singleMeasurement(uint8_t channel){
+    return ADS1256_GetChannalValue(channel);
+}
+
+void LoadSensor::setGainAndRate(ADS1256_DRATE drate, ADS1256_GAIN gain){
+    ADS1256_ConfigADC(gain,drate);
+    ADS1256_WriteCmd(CMD_SELFCAL);
+    DEV_Delay_ms(200);
+}
+
 void LoadSensor::processReads(){
     UBYTE buf[3] = {0,0,0};
     CurrentRead = 0;
     auto start = std::chrono::high_resolution_clock::now();
     while(CurrentRead < RequestedRead){
         ADS1256_WaitDRDY();
+        DEV_Delay_us(7);
         auto elapsed = std::chrono::high_resolution_clock::now() - start;
         ReadTimes[CurrentRead] = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
         buf[0] = DEV_SPI_ReadByte();
@@ -93,7 +105,6 @@ void LoadSensor::processReads(){
         buf[1] = DEV_SPI_ReadByte();
         DEV_Delay_us(3);
         buf[2] = DEV_SPI_ReadByte();
-        //DEV_Delay_us(3);
         UDOUBLE read = ((UDOUBLE)buf[0] << 16) & 0x00FF0000;
         read |= ((UDOUBLE)buf[1] << 8);  /* Pay attention to It is wrong   read |= (buf[1] << 8) */
         read |= buf[2];
@@ -105,6 +116,9 @@ void LoadSensor::processReads(){
     }
     DEV_SPI_WriteByte(CMD_SDATAC);
     DEV_Digital_Write(DEV_CS_PIN, 1);
-    //ADC[i]*5.0/0x7fffff
-    printf("readings completed");
+}
+
+void LoadSensor::SetMode(uint8_t mode){
+    ADS1256_SetMode(mode);
+    ScanMode = mode;
 }

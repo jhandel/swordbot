@@ -5,6 +5,7 @@
      to compile the interface */
     #include "./../ClearPathMotorSD/ClearPathMotorSD.h" 
     #include "./../LoadSensor/LoadSensor.h" 
+    #include "./../LoadSensor/ADS1256.h"
     #include "./../Switch/Switch.h" 
 
 %}
@@ -12,5 +13,6 @@
 
 %include "./../ClearPathMotorSD/ClearPathMotorSD.h" 
 %include "./../LoadSensor/LoadSensor.h" 
+%include "./../LoadSensor/ADS1256.h"
 %include "./../Switch/Switch.h" 
 %include "stdint.i"

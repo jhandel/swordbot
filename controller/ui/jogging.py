@@ -55,7 +55,7 @@ class JoggingFrame(ttk.Frame):
         self.jogging = False
 
 
-    def syncTab(self):
+    def syncTab(self, active):
         location = "{:10.4f}".format(self.machine.Motor.AxisLocation()) + " mm"
         self.locVar.set(location)
         if(not self.settings.getValue("homed")):

@@ -9,10 +9,11 @@ from PIL import Image
 import time
 
 class ConfigFrame(ttk.Frame):
-    def __init__(self,master,settings, machine):
+    def __init__(self,master,settings, machine, fullscreentoggle):
         self.master = master
         self.settings = settings
         self.machine = machine
+        self.fullscreentoggle = fullscreentoggle
         ttk.Frame.__init__(self, master, width = 780, height = 400)
         self.columnconfigure(1, weight=1)
         self.columnconfigure(0, weight=0)
@@ -142,6 +143,9 @@ class ConfigFrame(ttk.Frame):
         self.numPointBtn.grid(row=4, column=0, sticky="nsew")
         self.numBSBtn = ttk.Button(self.numPadFrame, text="Back Space",command=lambda: self.numPadCallback("bs"))
         self.numBSBtn.grid(row=4, column=1, columnspan=2, sticky="nsew")
+
+        self.toggleFullScreen = ttk.Button(self.numPadFrame, text="Toggle Fullscreen",command=self.fullscreentoggle)
+        self.toggleFullScreen.grid(row=5, column=1, columnspan=2, sticky="nsew")
     
     def _checkNumberOnly(self, action, value_if_allowed):
         if action != '1':
@@ -181,7 +185,7 @@ class ConfigFrame(ttk.Frame):
         self.machine.updateSettings()
         messagebox.showinfo("Notification", "Configurations Saved")
 
-    def syncTab(self):
+    def syncTab(self, active):
         self.retractSpeedVar.set(self.settings.getValue("retractSpeed"))
         self.retractVar.set(self.settings.getValue("retract"))
         self.penVar.set(self.settings.getValue("targetPen"))

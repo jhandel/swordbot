@@ -3,6 +3,7 @@ from libs.Devices import ClearPathMotorSD
 from libs.Devices import LoadSensor
 from libs.Devices import Switch
 from libs.Devices import SwitchCallback
+import libs.Devices as cspace
 from libs.settings import Settings
 import time
 
@@ -25,6 +26,8 @@ class Machine():
         self.Switch = switch
         self.Settings = settings
         self.updateSettings()
+        self.Sensor.setGainAndRate(cspace.ADS1256_7500SPS, cspace.ADS1256_GAIN_1)
+        self.setSignalMode("single")
 
     def updateSettings(self):
         self.Motor.setMaxVelInMM(int(self.Settings.getValue("Speed")) * 2)
@@ -46,17 +49,30 @@ class Machine():
         self.Switch.stopMonitor()
     
     def startSensor(self):
-        self.Sensor.startRead(100000,1)
+        self.Sensor.startRead(100000,0)
 
     def stopSensor(self):
         self.Sensor.stopRead()
 
+    def takeSingleMeasurement(self):
+        val = self.Sensor.singleMeasurement(0)
+        return val
+    
+    def setSignalMode(self,mode):
+        if (mode == "differential"):
+            self.Sensor.SetMode(1)
+        else:
+            self.Sensor.SetMode(0)
+
     def getReadings(self):
         count = self.Sensor.CurrentRead
+        tear = self.Settings.getValue("tear")
+        calibration = self.Settings.getValue("calibration")
         results = [[],[]]
-        for x in range(0, count):
+        for x in range(1, count):
             results[0].append(self.Sensor.TimeOfReading(x))
-            results[1].append(self.Sensor.ReadingAt(x))
+            value = round((self.Sensor.ReadingAt(x) -tear) * calibration,1)
+            results[1].append(value)
         return results
     
     def enable(self):
@@ -64,5 +80,8 @@ class Machine():
     
     def disable(self):
         self.Motor.disable()
+        del self.Motor
+        del self.Sensor
+        del self.Switch
 
     

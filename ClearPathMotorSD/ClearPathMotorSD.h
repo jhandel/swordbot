@@ -82,6 +82,7 @@ class ClearPathMotorSD
     DirForwardPinLevel = 1;
   }
   ~ClearPathMotorSD(){
+    printf("close motor");
     CommandX = 0;
     if(motorActivity.joinable()) motorActivity.join();
     DEV_ModuleExit();

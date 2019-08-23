@@ -134,6 +134,8 @@ void ADS1256_GetAll(UDOUBLE *ADC_Value);
 void ADS1256_GetContinousSingle(UDOUBLE *ADC_Value, UBYTE Channel, int count);
 void ADS1256_WaitDRDY();
 void ADS1256_SetChannal(UBYTE);
+void ADS1256_SetDiffChannal(UBYTE);
 void ADS1256_WriteCmd(UBYTE Cmd);
 UBYTE ADS1256_ReadChipID();
+UBYTE ADS1256_Read_data(UBYTE Reg);
 #endif

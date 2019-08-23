@@ -18,17 +18,19 @@ class LoadSensor
             CurrentRead = 0;
             Channel = 1;
             DEV_ModuleInit();
+            DEV_Delay_ms(200);
             ADS1256_init();
+            
         }
         ~LoadSensor(){
+            printf("closing channel");
             RequestedRead = 0;
             if(loadSensorThread.joinable()) loadSensorThread.join();
             DEV_ModuleExit();
         }
-
+        void setGainAndRate(ADS1256_DRATE, ADS1256_GAIN);
         void startRead(long,uint8_t);
-        void startRead(long,uint8_t,ADS1256_DRATE);
-        void startRead(long,uint8_t,ADS1256_DRATE, ADS1256_GAIN);
+        uint32_t singleMeasurement(uint8_t);
         bool currentlyReading();
         void stopRead();
         void clearData();
@@ -37,6 +39,7 @@ class LoadSensor
         uint8_t Channel;
         volatile long CurrentRead;
         long RequestedRead;
+        void SetMode(uint8_t);
         ADS1256_DRATE DateRate;
         ADS1256_GAIN Gain;
         
@@ -46,5 +49,6 @@ class LoadSensor
         void processReads();
         uint32_t Reads[100000];
         long ReadTimes[100000];
+        uint8_t ScanMode = 0;
 };
 #endif

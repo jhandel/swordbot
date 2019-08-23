@@ -49,7 +49,7 @@ class TestFrame(ttk.Frame):
         self.canvas.flush_events()
         self.canvas.show()
 
-    def syncTab(self):
+    def syncTab(self, active):
         if(not self.settings.getValue("homed")):
             self.runBtn.configure(state='disable')
         else:
@@ -85,20 +85,9 @@ class TestFrame(ttk.Frame):
         while(not finished):
             time.sleep(.001)
             finished = self.machine.Motor.commandDone()
-        #retract from target
-        self.machine.moveTo(retractmove,int(thrustspeed))
-        finished = False
-        while(not finished):
-            time.sleep(.001)
-            finished = self.machine.Motor.commandDone()
-        #wait a touch, and we are done with the test
-        time.sleep(.01)
+        time.sleep(.25)
         self.machine.stopSensor()
-        #return home
-
-
         results = self.machine.getReadings()
-        
         self.axis.plot(results[0], results[1], lw=2)
         self.canvas.draw()
         self.canvas.flush_events()
@@ -122,11 +111,12 @@ class TestFrame(ttk.Frame):
 
 
     def moveHome(self):
-        speed = self.settings.getValue("jogSpeed")
-        distance = self.machine.Motor.AxisLocation() * -1
-        self.machine.moveTo(distance,int(speed))
-        finished = False
-        while(not finished):
+        homed = False
+        self.machine.watchSwitch(self.machine.stopMove)
+        self.machine.moveTo(self.settings.getValue("maxDistance") *-1,int(self.settings.getValue("homeSpeed")))
+        while(not homed):
             time.sleep(.1)
-            finished = self.machine.Motor.commandDone()
-        self.machine.stopMove()
+            homed = self.machine.Motor.commandDone()
+        self.machine.stopSwitch()
+        self.machine.Motor.PulseLocation = 0
+        self.settings.setValue("homed",True)

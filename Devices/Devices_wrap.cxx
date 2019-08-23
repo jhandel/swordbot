@@ -3103,23 +3103,27 @@ namespace Swig {
 
 /* -------- TYPES TABLE (BEGIN) -------- */
 
-#define SWIGTYPE_p_ADS1256_DRATE swig_types[0]
-#define SWIGTYPE_p_ADS1256_GAIN swig_types[1]
-#define SWIGTYPE_p_ClearPathMotorSD swig_types[2]
-#define SWIGTYPE_p_LoadSensor swig_types[3]
-#define SWIGTYPE_p_Switch swig_types[4]
-#define SWIGTYPE_p_SwitchCallback swig_types[5]
-#define SWIGTYPE_p_char swig_types[6]
-#define SWIGTYPE_p_int swig_types[7]
-#define SWIGTYPE_p_long_long swig_types[8]
-#define SWIGTYPE_p_short swig_types[9]
-#define SWIGTYPE_p_signed_char swig_types[10]
-#define SWIGTYPE_p_unsigned_char swig_types[11]
-#define SWIGTYPE_p_unsigned_int swig_types[12]
-#define SWIGTYPE_p_unsigned_long_long swig_types[13]
-#define SWIGTYPE_p_unsigned_short swig_types[14]
-static swig_type_info *swig_types[16];
-static swig_module_info swig_module = {swig_types, 15, 0, 0, 0, 0};
+#define SWIGTYPE_p_ADS1256_CMD swig_types[0]
+#define SWIGTYPE_p_ADS1256_DRATE swig_types[1]
+#define SWIGTYPE_p_ADS1256_GAIN swig_types[2]
+#define SWIGTYPE_p_ADS1256_REG swig_types[3]
+#define SWIGTYPE_p_ClearPathMotorSD swig_types[4]
+#define SWIGTYPE_p_LoadSensor swig_types[5]
+#define SWIGTYPE_p_Switch swig_types[6]
+#define SWIGTYPE_p_SwitchCallback swig_types[7]
+#define SWIGTYPE_p_UBYTE swig_types[8]
+#define SWIGTYPE_p_UDOUBLE swig_types[9]
+#define SWIGTYPE_p_char swig_types[10]
+#define SWIGTYPE_p_int swig_types[11]
+#define SWIGTYPE_p_long_long swig_types[12]
+#define SWIGTYPE_p_short swig_types[13]
+#define SWIGTYPE_p_signed_char swig_types[14]
+#define SWIGTYPE_p_unsigned_char swig_types[15]
+#define SWIGTYPE_p_unsigned_int swig_types[16]
+#define SWIGTYPE_p_unsigned_long_long swig_types[17]
+#define SWIGTYPE_p_unsigned_short swig_types[18]
+static swig_type_info *swig_types[20];
+static swig_module_info swig_module = {swig_types, 19, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3228,6 +3232,7 @@ namespace swig {
      to compile the interface */
     #include "./../ClearPathMotorSD/ClearPathMotorSD.h" 
     #include "./../LoadSensor/LoadSensor.h" 
+    #include "./../LoadSensor/ADS1256.h"
     #include "./../Switch/Switch.h" 
 
 
@@ -4760,7 +4765,48 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_LoadSensor_startRead__SWIG_0(PyObject *SWIGUNUSEDPARM(self), Py_ssize_t nobjs, PyObject **swig_obj) {
+SWIGINTERN PyObject *_wrap_LoadSensor_setGainAndRate(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LoadSensor *arg1 = (LoadSensor *) 0 ;
+  ADS1256_DRATE arg2 ;
+  ADS1256_GAIN arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject *swig_obj[3] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "LoadSensor_setGainAndRate", 3, 3, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_LoadSensor, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LoadSensor_setGainAndRate" "', argument " "1"" of type '" "LoadSensor *""'"); 
+  }
+  arg1 = reinterpret_cast< LoadSensor * >(argp1);
+  ecode2 = SWIG_AsVal_int(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "LoadSensor_setGainAndRate" "', argument " "2"" of type '" "ADS1256_DRATE""'");
+  } 
+  arg2 = static_cast< ADS1256_DRATE >(val2);
+  ecode3 = SWIG_AsVal_int(swig_obj[2], &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "LoadSensor_setGainAndRate" "', argument " "3"" of type '" "ADS1256_GAIN""'");
+  } 
+  arg3 = static_cast< ADS1256_GAIN >(val3);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->setGainAndRate(arg2,arg3);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LoadSensor_startRead(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   LoadSensor *arg1 = (LoadSensor *) 0 ;
   long arg2 ;
@@ -4771,8 +4817,9 @@ SWIGINTERN PyObject *_wrap_LoadSensor_startRead__SWIG_0(PyObject *SWIGUNUSEDPARM
   int ecode2 = 0 ;
   unsigned char val3 ;
   int ecode3 = 0 ;
+  PyObject *swig_obj[3] ;
   
-  if ((nobjs < 3) || (nobjs > 3)) SWIG_fail;
+  if (!SWIG_Python_UnpackTuple(args, "LoadSensor_startRead", 3, 3, swig_obj)) SWIG_fail;
   res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_LoadSensor, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LoadSensor_startRead" "', argument " "1"" of type '" "LoadSensor *""'"); 
@@ -4800,225 +4847,37 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_LoadSensor_startRead__SWIG_1(PyObject *SWIGUNUSEDPARM(self), Py_ssize_t nobjs, PyObject **swig_obj) {
+SWIGINTERN PyObject *_wrap_LoadSensor_singleMeasurement(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   LoadSensor *arg1 = (LoadSensor *) 0 ;
-  long arg2 ;
-  uint8_t arg3 ;
-  ADS1256_DRATE arg4 ;
+  uint8_t arg2 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  long val2 ;
+  unsigned char val2 ;
   int ecode2 = 0 ;
-  unsigned char val3 ;
-  int ecode3 = 0 ;
-  void *argp4 ;
-  int res4 = 0 ;
+  PyObject *swig_obj[2] ;
+  uint32_t result;
   
-  if ((nobjs < 4) || (nobjs > 4)) SWIG_fail;
+  if (!SWIG_Python_UnpackTuple(args, "LoadSensor_singleMeasurement", 2, 2, swig_obj)) SWIG_fail;
   res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_LoadSensor, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LoadSensor_startRead" "', argument " "1"" of type '" "LoadSensor *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LoadSensor_singleMeasurement" "', argument " "1"" of type '" "LoadSensor *""'"); 
   }
   arg1 = reinterpret_cast< LoadSensor * >(argp1);
-  ecode2 = SWIG_AsVal_long(swig_obj[1], &val2);
+  ecode2 = SWIG_AsVal_unsigned_SS_char(swig_obj[1], &val2);
   if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "LoadSensor_startRead" "', argument " "2"" of type '" "long""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "LoadSensor_singleMeasurement" "', argument " "2"" of type '" "uint8_t""'");
   } 
-  arg2 = static_cast< long >(val2);
-  ecode3 = SWIG_AsVal_unsigned_SS_char(swig_obj[2], &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "LoadSensor_startRead" "', argument " "3"" of type '" "uint8_t""'");
-  } 
-  arg3 = static_cast< uint8_t >(val3);
-  {
-    res4 = SWIG_ConvertPtr(swig_obj[3], &argp4, SWIGTYPE_p_ADS1256_DRATE,  0  | 0);
-    if (!SWIG_IsOK(res4)) {
-      SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "LoadSensor_startRead" "', argument " "4"" of type '" "ADS1256_DRATE""'"); 
-    }  
-    if (!argp4) {
-      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LoadSensor_startRead" "', argument " "4"" of type '" "ADS1256_DRATE""'");
-    } else {
-      ADS1256_DRATE * temp = reinterpret_cast< ADS1256_DRATE * >(argp4);
-      arg4 = *temp;
-      if (SWIG_IsNewObj(res4)) delete temp;
-    }
-  }
+  arg2 = static_cast< uint8_t >(val2);
   {
     SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-    (arg1)->startRead(arg2,arg3,arg4);
+    result = (uint32_t)(arg1)->singleMeasurement(arg2);
     SWIG_PYTHON_THREAD_END_ALLOW;
   }
-  resultobj = SWIG_Py_Void();
+  resultobj = SWIG_From_unsigned_SS_int(static_cast< unsigned int >(result));
   return resultobj;
 fail:
   return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_LoadSensor_startRead__SWIG_2(PyObject *SWIGUNUSEDPARM(self), Py_ssize_t nobjs, PyObject **swig_obj) {
-  PyObject *resultobj = 0;
-  LoadSensor *arg1 = (LoadSensor *) 0 ;
-  long arg2 ;
-  uint8_t arg3 ;
-  ADS1256_DRATE arg4 ;
-  ADS1256_GAIN arg5 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  long val2 ;
-  int ecode2 = 0 ;
-  unsigned char val3 ;
-  int ecode3 = 0 ;
-  void *argp4 ;
-  int res4 = 0 ;
-  void *argp5 ;
-  int res5 = 0 ;
-  
-  if ((nobjs < 5) || (nobjs > 5)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_LoadSensor, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LoadSensor_startRead" "', argument " "1"" of type '" "LoadSensor *""'"); 
-  }
-  arg1 = reinterpret_cast< LoadSensor * >(argp1);
-  ecode2 = SWIG_AsVal_long(swig_obj[1], &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "LoadSensor_startRead" "', argument " "2"" of type '" "long""'");
-  } 
-  arg2 = static_cast< long >(val2);
-  ecode3 = SWIG_AsVal_unsigned_SS_char(swig_obj[2], &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "LoadSensor_startRead" "', argument " "3"" of type '" "uint8_t""'");
-  } 
-  arg3 = static_cast< uint8_t >(val3);
-  {
-    res4 = SWIG_ConvertPtr(swig_obj[3], &argp4, SWIGTYPE_p_ADS1256_DRATE,  0  | 0);
-    if (!SWIG_IsOK(res4)) {
-      SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "LoadSensor_startRead" "', argument " "4"" of type '" "ADS1256_DRATE""'"); 
-    }  
-    if (!argp4) {
-      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LoadSensor_startRead" "', argument " "4"" of type '" "ADS1256_DRATE""'");
-    } else {
-      ADS1256_DRATE * temp = reinterpret_cast< ADS1256_DRATE * >(argp4);
-      arg4 = *temp;
-      if (SWIG_IsNewObj(res4)) delete temp;
-    }
-  }
-  {
-    res5 = SWIG_ConvertPtr(swig_obj[4], &argp5, SWIGTYPE_p_ADS1256_GAIN,  0  | 0);
-    if (!SWIG_IsOK(res5)) {
-      SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "LoadSensor_startRead" "', argument " "5"" of type '" "ADS1256_GAIN""'"); 
-    }  
-    if (!argp5) {
-      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LoadSensor_startRead" "', argument " "5"" of type '" "ADS1256_GAIN""'");
-    } else {
-      ADS1256_GAIN * temp = reinterpret_cast< ADS1256_GAIN * >(argp5);
-      arg5 = *temp;
-      if (SWIG_IsNewObj(res5)) delete temp;
-    }
-  }
-  {
-    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-    (arg1)->startRead(arg2,arg3,arg4,arg5);
-    SWIG_PYTHON_THREAD_END_ALLOW;
-  }
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_LoadSensor_startRead(PyObject *self, PyObject *args) {
-  Py_ssize_t argc;
-  PyObject *argv[6] = {
-    0
-  };
-  
-  if (!(argc = SWIG_Python_UnpackTuple(args, "LoadSensor_startRead", 0, 5, argv))) SWIG_fail;
-  --argc;
-  if (argc == 3) {
-    int _v;
-    void *vptr = 0;
-    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_LoadSensor, 0);
-    _v = SWIG_CheckState(res);
-    if (_v) {
-      {
-        int res = SWIG_AsVal_long(argv[1], NULL);
-        _v = SWIG_CheckState(res);
-      }
-      if (_v) {
-        {
-          int res = SWIG_AsVal_unsigned_SS_char(argv[2], NULL);
-          _v = SWIG_CheckState(res);
-        }
-        if (_v) {
-          return _wrap_LoadSensor_startRead__SWIG_0(self, argc, argv);
-        }
-      }
-    }
-  }
-  if (argc == 4) {
-    int _v;
-    void *vptr = 0;
-    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_LoadSensor, 0);
-    _v = SWIG_CheckState(res);
-    if (_v) {
-      {
-        int res = SWIG_AsVal_long(argv[1], NULL);
-        _v = SWIG_CheckState(res);
-      }
-      if (_v) {
-        {
-          int res = SWIG_AsVal_unsigned_SS_char(argv[2], NULL);
-          _v = SWIG_CheckState(res);
-        }
-        if (_v) {
-          int res = SWIG_ConvertPtr(argv[3], 0, SWIGTYPE_p_ADS1256_DRATE, SWIG_POINTER_NO_NULL | 0);
-          _v = SWIG_CheckState(res);
-          if (_v) {
-            return _wrap_LoadSensor_startRead__SWIG_1(self, argc, argv);
-          }
-        }
-      }
-    }
-  }
-  if (argc == 5) {
-    int _v;
-    void *vptr = 0;
-    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_LoadSensor, 0);
-    _v = SWIG_CheckState(res);
-    if (_v) {
-      {
-        int res = SWIG_AsVal_long(argv[1], NULL);
-        _v = SWIG_CheckState(res);
-      }
-      if (_v) {
-        {
-          int res = SWIG_AsVal_unsigned_SS_char(argv[2], NULL);
-          _v = SWIG_CheckState(res);
-        }
-        if (_v) {
-          int res = SWIG_ConvertPtr(argv[3], 0, SWIGTYPE_p_ADS1256_DRATE, SWIG_POINTER_NO_NULL | 0);
-          _v = SWIG_CheckState(res);
-          if (_v) {
-            int res = SWIG_ConvertPtr(argv[4], 0, SWIGTYPE_p_ADS1256_GAIN, SWIG_POINTER_NO_NULL | 0);
-            _v = SWIG_CheckState(res);
-            if (_v) {
-              return _wrap_LoadSensor_startRead__SWIG_2(self, argc, argv);
-            }
-          }
-        }
-      }
-    }
-  }
-  
-fail:
-  SWIG_Python_RaiseOrModifyTypeError("Wrong number or type of arguments for overloaded function 'LoadSensor_startRead'.\n"
-    "  Possible C/C++ prototypes are:\n"
-    "    LoadSensor::startRead(long,uint8_t)\n"
-    "    LoadSensor::startRead(long,uint8_t,ADS1256_DRATE)\n"
-    "    LoadSensor::startRead(long,uint8_t,ADS1256_DRATE,ADS1256_GAIN)\n");
-  return 0;
 }
 
 
@@ -5349,14 +5208,47 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_LoadSensor_SetMode(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LoadSensor *arg1 = (LoadSensor *) 0 ;
+  uint8_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned char val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "LoadSensor_SetMode", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_LoadSensor, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LoadSensor_SetMode" "', argument " "1"" of type '" "LoadSensor *""'"); 
+  }
+  arg1 = reinterpret_cast< LoadSensor * >(argp1);
+  ecode2 = SWIG_AsVal_unsigned_SS_char(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "LoadSensor_SetMode" "', argument " "2"" of type '" "uint8_t""'");
+  } 
+  arg2 = static_cast< uint8_t >(val2);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->SetMode(arg2);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_LoadSensor_DateRate_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   LoadSensor *arg1 = (LoadSensor *) 0 ;
   ADS1256_DRATE arg2 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  void *argp2 ;
-  int res2 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
   PyObject *swig_obj[2] ;
   
   if (!SWIG_Python_UnpackTuple(args, "LoadSensor_DateRate_set", 2, 2, swig_obj)) SWIG_fail;
@@ -5365,19 +5257,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_DateRate_set(PyObject *SWIGUNUSEDPARM(self
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LoadSensor_DateRate_set" "', argument " "1"" of type '" "LoadSensor *""'"); 
   }
   arg1 = reinterpret_cast< LoadSensor * >(argp1);
-  {
-    res2 = SWIG_ConvertPtr(swig_obj[1], &argp2, SWIGTYPE_p_ADS1256_DRATE,  0  | 0);
-    if (!SWIG_IsOK(res2)) {
-      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "LoadSensor_DateRate_set" "', argument " "2"" of type '" "ADS1256_DRATE""'"); 
-    }  
-    if (!argp2) {
-      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LoadSensor_DateRate_set" "', argument " "2"" of type '" "ADS1256_DRATE""'");
-    } else {
-      ADS1256_DRATE * temp = reinterpret_cast< ADS1256_DRATE * >(argp2);
-      arg2 = *temp;
-      if (SWIG_IsNewObj(res2)) delete temp;
-    }
-  }
+  ecode2 = SWIG_AsVal_int(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "LoadSensor_DateRate_set" "', argument " "2"" of type '" "ADS1256_DRATE""'");
+  } 
+  arg2 = static_cast< ADS1256_DRATE >(val2);
   {
     SWIG_PYTHON_THREAD_BEGIN_ALLOW;
     if (arg1) (arg1)->DateRate = arg2;
@@ -5407,10 +5291,10 @@ SWIGINTERN PyObject *_wrap_LoadSensor_DateRate_get(PyObject *SWIGUNUSEDPARM(self
   arg1 = reinterpret_cast< LoadSensor * >(argp1);
   {
     SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-    result =  ((arg1)->DateRate);
+    result = (ADS1256_DRATE) ((arg1)->DateRate);
     SWIG_PYTHON_THREAD_END_ALLOW;
   }
-  resultobj = SWIG_NewPointerObj((new ADS1256_DRATE(static_cast< const ADS1256_DRATE& >(result))), SWIGTYPE_p_ADS1256_DRATE, SWIG_POINTER_OWN |  0 );
+  resultobj = SWIG_From_int(static_cast< int >(result));
   return resultobj;
 fail:
   return NULL;
@@ -5423,8 +5307,8 @@ SWIGINTERN PyObject *_wrap_LoadSensor_Gain_set(PyObject *SWIGUNUSEDPARM(self), P
   ADS1256_GAIN arg2 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  void *argp2 ;
-  int res2 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
   PyObject *swig_obj[2] ;
   
   if (!SWIG_Python_UnpackTuple(args, "LoadSensor_Gain_set", 2, 2, swig_obj)) SWIG_fail;
@@ -5433,19 +5317,11 @@ SWIGINTERN PyObject *_wrap_LoadSensor_Gain_set(PyObject *SWIGUNUSEDPARM(self), P
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LoadSensor_Gain_set" "', argument " "1"" of type '" "LoadSensor *""'"); 
   }
   arg1 = reinterpret_cast< LoadSensor * >(argp1);
-  {
-    res2 = SWIG_ConvertPtr(swig_obj[1], &argp2, SWIGTYPE_p_ADS1256_GAIN,  0  | 0);
-    if (!SWIG_IsOK(res2)) {
-      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "LoadSensor_Gain_set" "', argument " "2"" of type '" "ADS1256_GAIN""'"); 
-    }  
-    if (!argp2) {
-      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LoadSensor_Gain_set" "', argument " "2"" of type '" "ADS1256_GAIN""'");
-    } else {
-      ADS1256_GAIN * temp = reinterpret_cast< ADS1256_GAIN * >(argp2);
-      arg2 = *temp;
-      if (SWIG_IsNewObj(res2)) delete temp;
-    }
-  }
+  ecode2 = SWIG_AsVal_int(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "LoadSensor_Gain_set" "', argument " "2"" of type '" "ADS1256_GAIN""'");
+  } 
+  arg2 = static_cast< ADS1256_GAIN >(val2);
   {
     SWIG_PYTHON_THREAD_BEGIN_ALLOW;
     if (arg1) (arg1)->Gain = arg2;
@@ -5475,10 +5351,10 @@ SWIGINTERN PyObject *_wrap_LoadSensor_Gain_get(PyObject *SWIGUNUSEDPARM(self), P
   arg1 = reinterpret_cast< LoadSensor * >(argp1);
   {
     SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-    result =  ((arg1)->Gain);
+    result = (ADS1256_GAIN) ((arg1)->Gain);
     SWIG_PYTHON_THREAD_END_ALLOW;
   }
-  resultobj = SWIG_NewPointerObj((new ADS1256_GAIN(static_cast< const ADS1256_GAIN& >(result))), SWIGTYPE_p_ADS1256_GAIN, SWIG_POINTER_OWN |  0 );
+  resultobj = SWIG_From_int(static_cast< int >(result));
   return resultobj;
 fail:
   return NULL;
@@ -5495,6 +5371,315 @@ SWIGINTERN PyObject *LoadSensor_swigregister(PyObject *SWIGUNUSEDPARM(self), PyO
 SWIGINTERN PyObject *LoadSensor_swiginit(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   return SWIG_Python_InitShadowInstance(args);
 }
+
+SWIGINTERN int Swig_var_ADS1256_DRATE_E_set(PyObject *) {
+  SWIG_Error(SWIG_AttributeError,"Variable ADS1256_DRATE_E is read-only.");
+  return 1;
+}
+
+
+SWIGINTERN PyObject *Swig_var_ADS1256_DRATE_E_get(void) {
+  PyObject *pyobj = 0;
+  
+  pyobj = SWIG_NewPointerObj(SWIG_as_voidptr(ADS1256_DRATE_E), SWIGTYPE_p_unsigned_char,  0 );
+  return pyobj;
+}
+
+
+SWIGINTERN PyObject *_wrap_ADS1256_init(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UBYTE result;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ADS1256_init", 0, 0, 0)) SWIG_fail;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = ADS1256_init();
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_NewPointerObj((new UBYTE(static_cast< const UBYTE& >(result))), SWIGTYPE_p_UBYTE, SWIG_POINTER_OWN |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ADS1256_SetMode(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UBYTE arg1 ;
+  void *argp1 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  {
+    res1 = SWIG_ConvertPtr(swig_obj[0], &argp1, SWIGTYPE_p_UBYTE,  0  | 0);
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ADS1256_SetMode" "', argument " "1"" of type '" "UBYTE""'"); 
+    }  
+    if (!argp1) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "ADS1256_SetMode" "', argument " "1"" of type '" "UBYTE""'");
+    } else {
+      UBYTE * temp = reinterpret_cast< UBYTE * >(argp1);
+      arg1 = *temp;
+      if (SWIG_IsNewObj(res1)) delete temp;
+    }
+  }
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    ADS1256_SetMode(arg1);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ADS1256_ConfigADC(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ADS1256_GAIN arg1 ;
+  ADS1256_DRATE arg2 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ADS1256_ConfigADC", 2, 2, swig_obj)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(swig_obj[0], &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "ADS1256_ConfigADC" "', argument " "1"" of type '" "ADS1256_GAIN""'");
+  } 
+  arg1 = static_cast< ADS1256_GAIN >(val1);
+  ecode2 = SWIG_AsVal_int(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ADS1256_ConfigADC" "', argument " "2"" of type '" "ADS1256_DRATE""'");
+  } 
+  arg2 = static_cast< ADS1256_DRATE >(val2);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    ADS1256_ConfigADC(arg1,arg2);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ADS1256_GetChannalValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UBYTE arg1 ;
+  void *argp1 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  UDOUBLE result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  {
+    res1 = SWIG_ConvertPtr(swig_obj[0], &argp1, SWIGTYPE_p_UBYTE,  0  | 0);
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ADS1256_GetChannalValue" "', argument " "1"" of type '" "UBYTE""'"); 
+    }  
+    if (!argp1) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "ADS1256_GetChannalValue" "', argument " "1"" of type '" "UBYTE""'");
+    } else {
+      UBYTE * temp = reinterpret_cast< UBYTE * >(argp1);
+      arg1 = *temp;
+      if (SWIG_IsNewObj(res1)) delete temp;
+    }
+  }
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = ADS1256_GetChannalValue(arg1);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_NewPointerObj((new UDOUBLE(static_cast< const UDOUBLE& >(result))), SWIGTYPE_p_UDOUBLE, SWIG_POINTER_OWN |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ADS1256_GetAll(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UDOUBLE *arg1 = (UDOUBLE *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_UDOUBLE, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ADS1256_GetAll" "', argument " "1"" of type '" "UDOUBLE *""'"); 
+  }
+  arg1 = reinterpret_cast< UDOUBLE * >(argp1);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    ADS1256_GetAll(arg1);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ADS1256_GetContinousSingle(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UDOUBLE *arg1 = (UDOUBLE *) 0 ;
+  UBYTE arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 ;
+  int res2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject *swig_obj[3] ;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ADS1256_GetContinousSingle", 3, 3, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_UDOUBLE, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ADS1256_GetContinousSingle" "', argument " "1"" of type '" "UDOUBLE *""'"); 
+  }
+  arg1 = reinterpret_cast< UDOUBLE * >(argp1);
+  {
+    res2 = SWIG_ConvertPtr(swig_obj[1], &argp2, SWIGTYPE_p_UBYTE,  0  | 0);
+    if (!SWIG_IsOK(res2)) {
+      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "ADS1256_GetContinousSingle" "', argument " "2"" of type '" "UBYTE""'"); 
+    }  
+    if (!argp2) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "ADS1256_GetContinousSingle" "', argument " "2"" of type '" "UBYTE""'");
+    } else {
+      UBYTE * temp = reinterpret_cast< UBYTE * >(argp2);
+      arg2 = *temp;
+      if (SWIG_IsNewObj(res2)) delete temp;
+    }
+  }
+  ecode3 = SWIG_AsVal_int(swig_obj[2], &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "ADS1256_GetContinousSingle" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    ADS1256_GetContinousSingle(arg1,arg2,arg3);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ADS1256_WaitDRDY(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ADS1256_WaitDRDY", 0, 0, 0)) SWIG_fail;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    ADS1256_WaitDRDY();
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ADS1256_SetChannal(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UBYTE arg1 ;
+  void *argp1 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  {
+    res1 = SWIG_ConvertPtr(swig_obj[0], &argp1, SWIGTYPE_p_UBYTE,  0  | 0);
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ADS1256_SetChannal" "', argument " "1"" of type '" "UBYTE""'"); 
+    }  
+    if (!argp1) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "ADS1256_SetChannal" "', argument " "1"" of type '" "UBYTE""'");
+    } else {
+      UBYTE * temp = reinterpret_cast< UBYTE * >(argp1);
+      arg1 = *temp;
+      if (SWIG_IsNewObj(res1)) delete temp;
+    }
+  }
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    ADS1256_SetChannal(arg1);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ADS1256_WriteCmd(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UBYTE arg1 ;
+  void *argp1 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  {
+    res1 = SWIG_ConvertPtr(swig_obj[0], &argp1, SWIGTYPE_p_UBYTE,  0  | 0);
+    if (!SWIG_IsOK(res1)) {
+      SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ADS1256_WriteCmd" "', argument " "1"" of type '" "UBYTE""'"); 
+    }  
+    if (!argp1) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "ADS1256_WriteCmd" "', argument " "1"" of type '" "UBYTE""'");
+    } else {
+      UBYTE * temp = reinterpret_cast< UBYTE * >(argp1);
+      arg1 = *temp;
+      if (SWIG_IsNewObj(res1)) delete temp;
+    }
+  }
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    ADS1256_WriteCmd(arg1);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ADS1256_ReadChipID(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  UBYTE result;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ADS1256_ReadChipID", 0, 0, 0)) SWIG_fail;
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = ADS1256_ReadChipID();
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_NewPointerObj((new UBYTE(static_cast< const UBYTE& >(result))), SWIGTYPE_p_UBYTE, SWIG_POINTER_OWN |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
 
 SWIGINTERN PyObject *_wrap_delete_SwitchCallback(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
@@ -5980,7 +6165,9 @@ static PyMethodDef SwigMethods[] = {
 	 { "ClearPathMotorSD_swiginit", ClearPathMotorSD_swiginit, METH_VARARGS, NULL},
 	 { "new_LoadSensor", _wrap_new_LoadSensor, METH_NOARGS, NULL},
 	 { "delete_LoadSensor", _wrap_delete_LoadSensor, METH_O, NULL},
+	 { "LoadSensor_setGainAndRate", _wrap_LoadSensor_setGainAndRate, METH_VARARGS, NULL},
 	 { "LoadSensor_startRead", _wrap_LoadSensor_startRead, METH_VARARGS, NULL},
+	 { "LoadSensor_singleMeasurement", _wrap_LoadSensor_singleMeasurement, METH_VARARGS, NULL},
 	 { "LoadSensor_currentlyReading", _wrap_LoadSensor_currentlyReading, METH_O, NULL},
 	 { "LoadSensor_stopRead", _wrap_LoadSensor_stopRead, METH_O, NULL},
 	 { "LoadSensor_clearData", _wrap_LoadSensor_clearData, METH_O, NULL},
@@ -5992,12 +6179,23 @@ static PyMethodDef SwigMethods[] = {
 	 { "LoadSensor_CurrentRead_get", _wrap_LoadSensor_CurrentRead_get, METH_O, NULL},
 	 { "LoadSensor_RequestedRead_set", _wrap_LoadSensor_RequestedRead_set, METH_VARARGS, NULL},
 	 { "LoadSensor_RequestedRead_get", _wrap_LoadSensor_RequestedRead_get, METH_O, NULL},
+	 { "LoadSensor_SetMode", _wrap_LoadSensor_SetMode, METH_VARARGS, NULL},
 	 { "LoadSensor_DateRate_set", _wrap_LoadSensor_DateRate_set, METH_VARARGS, NULL},
 	 { "LoadSensor_DateRate_get", _wrap_LoadSensor_DateRate_get, METH_O, NULL},
 	 { "LoadSensor_Gain_set", _wrap_LoadSensor_Gain_set, METH_VARARGS, NULL},
 	 { "LoadSensor_Gain_get", _wrap_LoadSensor_Gain_get, METH_O, NULL},
 	 { "LoadSensor_swigregister", LoadSensor_swigregister, METH_O, NULL},
 	 { "LoadSensor_swiginit", LoadSensor_swiginit, METH_VARARGS, NULL},
+	 { "ADS1256_init", _wrap_ADS1256_init, METH_NOARGS, NULL},
+	 { "ADS1256_SetMode", _wrap_ADS1256_SetMode, METH_O, NULL},
+	 { "ADS1256_ConfigADC", _wrap_ADS1256_ConfigADC, METH_VARARGS, NULL},
+	 { "ADS1256_GetChannalValue", _wrap_ADS1256_GetChannalValue, METH_O, NULL},
+	 { "ADS1256_GetAll", _wrap_ADS1256_GetAll, METH_O, NULL},
+	 { "ADS1256_GetContinousSingle", _wrap_ADS1256_GetContinousSingle, METH_VARARGS, NULL},
+	 { "ADS1256_WaitDRDY", _wrap_ADS1256_WaitDRDY, METH_NOARGS, NULL},
+	 { "ADS1256_SetChannal", _wrap_ADS1256_SetChannal, METH_O, NULL},
+	 { "ADS1256_WriteCmd", _wrap_ADS1256_WriteCmd, METH_O, NULL},
+	 { "ADS1256_ReadChipID", _wrap_ADS1256_ReadChipID, METH_NOARGS, NULL},
 	 { "delete_SwitchCallback", _wrap_delete_SwitchCallback, METH_O, NULL},
 	 { "SwitchCallback_run", _wrap_SwitchCallback_run, METH_O, NULL},
 	 { "new_SwitchCallback", _wrap_new_SwitchCallback, METH_O, NULL},
@@ -6026,12 +6224,16 @@ static PyMethodDef SwigMethods_proxydocs[] = {
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
-static swig_type_info _swigt__p_ADS1256_DRATE = {"_p_ADS1256_DRATE", "ADS1256_DRATE *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_ADS1256_GAIN = {"_p_ADS1256_GAIN", "ADS1256_GAIN *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_ADS1256_CMD = {"_p_ADS1256_CMD", "enum ADS1256_CMD *|ADS1256_CMD *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_ADS1256_DRATE = {"_p_ADS1256_DRATE", "enum ADS1256_DRATE *|ADS1256_DRATE *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_ADS1256_GAIN = {"_p_ADS1256_GAIN", "enum ADS1256_GAIN *|ADS1256_GAIN *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_ADS1256_REG = {"_p_ADS1256_REG", "enum ADS1256_REG *|ADS1256_REG *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_ClearPathMotorSD = {"_p_ClearPathMotorSD", "ClearPathMotorSD *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_LoadSensor = {"_p_LoadSensor", "LoadSensor *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Switch = {"_p_Switch", "Switch *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_SwitchCallback = {"_p_SwitchCallback", "SwitchCallback *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_UBYTE = {"_p_UBYTE", "UBYTE *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_UDOUBLE = {"_p_UDOUBLE", "UDOUBLE *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_int = {"_p_int", "intptr_t *|int *|int_least32_t *|int_fast32_t *|int32_t *|int_fast16_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_long_long = {"_p_long_long", "int_least64_t *|int_fast64_t *|int64_t *|long long *|intmax_t *", 0, 0, (void*)0, 0};
@@ -6043,12 +6245,16 @@ static swig_type_info _swigt__p_unsigned_long_long = {"_p_unsigned_long_long", "
 static swig_type_info _swigt__p_unsigned_short = {"_p_unsigned_short", "unsigned short *|uint_least16_t *|uint16_t *", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
+  &_swigt__p_ADS1256_CMD,
   &_swigt__p_ADS1256_DRATE,
   &_swigt__p_ADS1256_GAIN,
+  &_swigt__p_ADS1256_REG,
   &_swigt__p_ClearPathMotorSD,
   &_swigt__p_LoadSensor,
   &_swigt__p_Switch,
   &_swigt__p_SwitchCallback,
+  &_swigt__p_UBYTE,
+  &_swigt__p_UDOUBLE,
   &_swigt__p_char,
   &_swigt__p_int,
   &_swigt__p_long_long,
@@ -6060,12 +6266,16 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_unsigned_short,
 };
 
+static swig_cast_info _swigc__p_ADS1256_CMD[] = {  {&_swigt__p_ADS1256_CMD, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_ADS1256_DRATE[] = {  {&_swigt__p_ADS1256_DRATE, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_ADS1256_GAIN[] = {  {&_swigt__p_ADS1256_GAIN, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_ADS1256_REG[] = {  {&_swigt__p_ADS1256_REG, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_ClearPathMotorSD[] = {  {&_swigt__p_ClearPathMotorSD, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_LoadSensor[] = {  {&_swigt__p_LoadSensor, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Switch[] = {  {&_swigt__p_Switch, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_SwitchCallback[] = {  {&_swigt__p_SwitchCallback, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_UBYTE[] = {  {&_swigt__p_UBYTE, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_UDOUBLE[] = {  {&_swigt__p_UDOUBLE, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_int[] = {  {&_swigt__p_int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_long_long[] = {  {&_swigt__p_long_long, 0, 0, 0},{0, 0, 0, 0}};
@@ -6077,12 +6287,16 @@ static swig_cast_info _swigc__p_unsigned_long_long[] = {  {&_swigt__p_unsigned_l
 static swig_cast_info _swigc__p_unsigned_short[] = {  {&_swigt__p_unsigned_short, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
+  _swigc__p_ADS1256_CMD,
   _swigc__p_ADS1256_DRATE,
   _swigc__p_ADS1256_GAIN,
+  _swigc__p_ADS1256_REG,
   _swigc__p_ClearPathMotorSD,
   _swigc__p_LoadSensor,
   _swigc__p_Switch,
   _swigc__p_SwitchCallback,
+  _swigc__p_UBYTE,
+  _swigc__p_UDOUBLE,
   _swigc__p_char,
   _swigc__p_int,
   _swigc__p_long_long,
@@ -6821,6 +7035,67 @@ SWIG_init(void) {
   
   SWIG_InstallConstants(d,swig_const_table);
   
+  SWIG_Python_SetConstant(d, "ADS1256_GAIN_1",SWIG_From_int(static_cast< int >(ADS1256_GAIN_1)));
+  SWIG_Python_SetConstant(d, "ADS1256_GAIN_2",SWIG_From_int(static_cast< int >(ADS1256_GAIN_2)));
+  SWIG_Python_SetConstant(d, "ADS1256_GAIN_4",SWIG_From_int(static_cast< int >(ADS1256_GAIN_4)));
+  SWIG_Python_SetConstant(d, "ADS1256_GAIN_8",SWIG_From_int(static_cast< int >(ADS1256_GAIN_8)));
+  SWIG_Python_SetConstant(d, "ADS1256_GAIN_16",SWIG_From_int(static_cast< int >(ADS1256_GAIN_16)));
+  SWIG_Python_SetConstant(d, "ADS1256_GAIN_32",SWIG_From_int(static_cast< int >(ADS1256_GAIN_32)));
+  SWIG_Python_SetConstant(d, "ADS1256_GAIN_64",SWIG_From_int(static_cast< int >(ADS1256_GAIN_64)));
+  SWIG_Python_SetConstant(d, "ADS1256_30000SPS",SWIG_From_int(static_cast< int >(ADS1256_30000SPS)));
+  SWIG_Python_SetConstant(d, "ADS1256_15000SPS",SWIG_From_int(static_cast< int >(ADS1256_15000SPS)));
+  SWIG_Python_SetConstant(d, "ADS1256_7500SPS",SWIG_From_int(static_cast< int >(ADS1256_7500SPS)));
+  SWIG_Python_SetConstant(d, "ADS1256_3750SPS",SWIG_From_int(static_cast< int >(ADS1256_3750SPS)));
+  SWIG_Python_SetConstant(d, "ADS1256_2000SPS",SWIG_From_int(static_cast< int >(ADS1256_2000SPS)));
+  SWIG_Python_SetConstant(d, "ADS1256_1000SPS",SWIG_From_int(static_cast< int >(ADS1256_1000SPS)));
+  SWIG_Python_SetConstant(d, "ADS1256_500SPS",SWIG_From_int(static_cast< int >(ADS1256_500SPS)));
+  SWIG_Python_SetConstant(d, "ADS1256_100SPS",SWIG_From_int(static_cast< int >(ADS1256_100SPS)));
+  SWIG_Python_SetConstant(d, "ADS1256_60SPS",SWIG_From_int(static_cast< int >(ADS1256_60SPS)));
+  SWIG_Python_SetConstant(d, "ADS1256_50SPS",SWIG_From_int(static_cast< int >(ADS1256_50SPS)));
+  SWIG_Python_SetConstant(d, "ADS1256_30SPS",SWIG_From_int(static_cast< int >(ADS1256_30SPS)));
+  SWIG_Python_SetConstant(d, "ADS1256_25SPS",SWIG_From_int(static_cast< int >(ADS1256_25SPS)));
+  SWIG_Python_SetConstant(d, "ADS1256_15SPS",SWIG_From_int(static_cast< int >(ADS1256_15SPS)));
+  SWIG_Python_SetConstant(d, "ADS1256_10SPS",SWIG_From_int(static_cast< int >(ADS1256_10SPS)));
+  SWIG_Python_SetConstant(d, "ADS1256_5SPS",SWIG_From_int(static_cast< int >(ADS1256_5SPS)));
+  SWIG_Python_SetConstant(d, "ADS1256_2d5SPS",SWIG_From_int(static_cast< int >(ADS1256_2d5SPS)));
+  SWIG_Python_SetConstant(d, "ADS1256_DRATE_MAX",SWIG_From_int(static_cast< int >(ADS1256_DRATE_MAX)));
+  SWIG_Python_SetConstant(d, "REG_STATUS",SWIG_From_int(static_cast< int >(REG_STATUS)));
+  SWIG_Python_SetConstant(d, "REG_MUX",SWIG_From_int(static_cast< int >(REG_MUX)));
+  SWIG_Python_SetConstant(d, "REG_ADCON",SWIG_From_int(static_cast< int >(REG_ADCON)));
+  SWIG_Python_SetConstant(d, "REG_DRATE",SWIG_From_int(static_cast< int >(REG_DRATE)));
+  SWIG_Python_SetConstant(d, "REG_IO",SWIG_From_int(static_cast< int >(REG_IO)));
+  SWIG_Python_SetConstant(d, "REG_OFC0",SWIG_From_int(static_cast< int >(REG_OFC0)));
+  SWIG_Python_SetConstant(d, "REG_OFC1",SWIG_From_int(static_cast< int >(REG_OFC1)));
+  SWIG_Python_SetConstant(d, "REG_OFC2",SWIG_From_int(static_cast< int >(REG_OFC2)));
+  SWIG_Python_SetConstant(d, "REG_FSC0",SWIG_From_int(static_cast< int >(REG_FSC0)));
+  SWIG_Python_SetConstant(d, "REG_FSC1",SWIG_From_int(static_cast< int >(REG_FSC1)));
+  SWIG_Python_SetConstant(d, "REG_FSC2",SWIG_From_int(static_cast< int >(REG_FSC2)));
+  SWIG_Python_SetConstant(d, "CMD_WAKEUP",SWIG_From_int(static_cast< int >(CMD_WAKEUP)));
+  SWIG_Python_SetConstant(d, "CMD_RDATA",SWIG_From_int(static_cast< int >(CMD_RDATA)));
+  SWIG_Python_SetConstant(d, "CMD_RDATAC",SWIG_From_int(static_cast< int >(CMD_RDATAC)));
+  SWIG_Python_SetConstant(d, "CMD_SDATAC",SWIG_From_int(static_cast< int >(CMD_SDATAC)));
+  SWIG_Python_SetConstant(d, "CMD_RREG",SWIG_From_int(static_cast< int >(CMD_RREG)));
+  SWIG_Python_SetConstant(d, "CMD_WREG",SWIG_From_int(static_cast< int >(CMD_WREG)));
+  SWIG_Python_SetConstant(d, "CMD_SELFCAL",SWIG_From_int(static_cast< int >(CMD_SELFCAL)));
+  SWIG_Python_SetConstant(d, "CMD_SELFOCAL",SWIG_From_int(static_cast< int >(CMD_SELFOCAL)));
+  SWIG_Python_SetConstant(d, "CMD_SELFGCAL",SWIG_From_int(static_cast< int >(CMD_SELFGCAL)));
+  SWIG_Python_SetConstant(d, "CMD_SYSOCAL",SWIG_From_int(static_cast< int >(CMD_SYSOCAL)));
+  SWIG_Python_SetConstant(d, "CMD_SYSGCAL",SWIG_From_int(static_cast< int >(CMD_SYSGCAL)));
+  SWIG_Python_SetConstant(d, "CMD_SYNC",SWIG_From_int(static_cast< int >(CMD_SYNC)));
+  SWIG_Python_SetConstant(d, "CMD_STANDBY",SWIG_From_int(static_cast< int >(CMD_STANDBY)));
+  SWIG_Python_SetConstant(d, "CMD_RESET",SWIG_From_int(static_cast< int >(CMD_RESET)));
+  globals = SWIG_globals();
+  if (!globals) {
+    PyErr_SetString(PyExc_TypeError, "Failure to create SWIG globals.");
+#if PY_VERSION_HEX >= 0x03000000
+    return NULL;
+#else
+    return;
+#endif
+  }
+  PyDict_SetItemString(md, "cvar", globals);
+  Py_DECREF(globals);
+  SWIG_addvarlink(globals, "ADS1256_DRATE_E", Swig_var_ADS1256_DRATE_E_get, Swig_var_ADS1256_DRATE_E_set);
   
   /* Initialize threading */
   SWIG_PYTHON_INITIALIZE_THREADS;

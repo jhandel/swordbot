@@ -21,7 +21,10 @@ class Settings():
             "targetPen" : "6.35",
             "retract" : "100",
             "retractSpeed" : "1000",
-            "runNumber":"0"
+            "runNumber":"0",
+            "fullScreen":"false",
+            "tear":"229000",
+            "calibration":"14"
             }
             self.save()
         self.settings["homed"] = "false"
@@ -34,6 +37,8 @@ class Settings():
     def getValue(self, key):
         val = self.settings[key]
         if(key == "homed"):
+            return val == "true"
+        elif (key == "fullScreen"):
             return val == "true"
         else:
             return float(val)

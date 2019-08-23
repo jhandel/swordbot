@@ -29,6 +29,7 @@ class MainApp():
 
     def __del__(self):
         self.machine.disable()
+        self.window.disable()
 
     def runUI(self):
         self.window.mainloop()
