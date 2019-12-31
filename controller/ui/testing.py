@@ -8,7 +8,7 @@ from tkinter import messagebox
 from PIL import Image
 import matplotlib
 matplotlib.use("TkAgg")
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import time
 
@@ -38,7 +38,7 @@ class TestFrame(ttk.Frame):
         self.axis = self.figure.add_subplot(111)
         self.axis.plot([], [], lw=2)
         self.canvas = FigureCanvasTkAgg(self.figure, self)
-        self.canvas.show()
+        self.canvas.draw()
         self.canvas.get_tk_widget().grid(row=1, column=0, columnspan=4, sticky="nsew")
         self.clearGraphBtn = ttk.Button(self, text="Clear", command=self.clearResults)
         self.clearGraphBtn.grid(row=0, column=3,sticky="e")
@@ -47,7 +47,7 @@ class TestFrame(ttk.Frame):
         self.axis.clear()
         self.canvas.draw()
         self.canvas.flush_events()
-        self.canvas.show()
+        self.canvas.draw()
 
     def syncTab(self, active):
         if(not self.settings.getValue("homed")):
@@ -88,25 +88,36 @@ class TestFrame(ttk.Frame):
         time.sleep(.25)
         self.machine.stopSensor()
         results = self.machine.getReadings()
-        self.axis.plot(results[0], results[1], lw=2)
+        self.axis.plot(results[0], results[2], lw=2)
         self.canvas.draw()
         self.canvas.flush_events()
-        self.canvas.show()
+        self.canvas.draw()
         
         self.moveHome()
 
         filenametime = time.time()
         acceleration = int(self.settings.getValue("acceleration"))
-        f = open("run-" + str(runNum) + ".csv", "a")
+        f = open("run-measurements-" + str(runNum) + ".csv", "a")
         f.write('run,speed,distance,penetration,acceleration\r\n')
         f.write(str(runNum)+ ','+ str(thrustspeed) +','+ str(thrustmove) +','+ str(penetration) +','+ str(acceleration) +'\r\n')
         f.write('\r\n')
         f.write('\r\n')
         f.write('\r\n')
-        f.write('microsecond,measurement\r\n')
+        f.write('microsecond,rawmeasurement,calcmeasurement\r\n')
         count = len(results[0])
         for i in range(0, count):
-            f.write(str(results[0][i]) + "," + str(results[1][i]) + '\r\n')
+            f.write(str(results[0][i]) + "," + str(results[1][i]) + "," + str(results[2][i]) +'\r\n')
+        f.close()
+        f = open("run-movement-log-" + str(runNum) + ".csv", "a")
+        f.write('run,speed,distance,penetration,acceleration\r\n')
+        f.write(str(runNum)+ ','+ str(thrustspeed) +','+ str(thrustmove) +','+ str(penetration) +','+ str(acceleration) +'\r\n')
+        f.write('\r\n')
+        f.write('\r\n')
+        f.write('\r\n')
+        f.write('microsecond,location\r\n')
+        count = len(results[0])
+        for i in range(0, count):
+            f.write(str(results[3][i]) + "," + str(results[4][i]) + '\r\n')
         f.close()
 
 

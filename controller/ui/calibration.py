@@ -15,6 +15,7 @@ class CalibrationFrame(ttk.Frame):
         self.machine = machine
         self.master = master
         ttk.Frame.__init__(self, master, width = 780, height = 400)
+        self.columnconfigure(0, weight=1)
         self.currentCalibration = self.settings.getValue("calibration")
         self.currentTear = self.settings.getValue("tear")
         self.currentRaw = 0
@@ -27,43 +28,91 @@ class CalibrationFrame(ttk.Frame):
         self.currentRawLocationLbl.grid(row=2,column=0, columnspan=3, sticky="nsew")
         self.isActive = False
 
-        self.calibrate500btn = ttk.Button(self, text="Calibrate 500g",command=self.calibrate)
-        self.calibrate500btn.grid(row=3, column=0, sticky="nsew")
-
         self.TearBtn = ttk.Button(self, text="Tear",command=self.tear)
-        self.TearBtn.grid(row=3, column=3, sticky="nsew")
-        
+        self.TearBtn.grid(row=3, column=0, columnspan=3, sticky="nsew")
+
+        self.isRunningCal = False
+        self.vcmd = (self.register(self._checkNumberOnly), '%d', '%P')
+
+        self.calibrationRunLabel = ttk.Label(self, text="Calibration weight",  anchor=tk.E)
+        self.calibrationRunLabel.grid(row=4, column=0,sticky="e")
+        self.calibrationRunVar = tk.StringVar()
+        self.calibrationRunVar.set(0)
+        self.calibrationRunEntry = ttk.Entry(self, width=35, font=('Helvetica', 16),validate='key', validatecommand=self.vcmd, textvariable=self.calibrationRunVar)
+        self.calibrationRunEntry.grid(row=4, column=1,sticky="w")
+        self.calibrationRunEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.calibrationRunEntry, self.calibrationRunVar))
+
+        self.calibrate500btn = ttk.Button(self, text="Run Calibration",command=self.calibrate)
+        self.calibrate500btn.grid(row=5, column=0,  columnspan=3, sticky="nsew")
+        self.calibrate500btn.configure(state='disable')
+
+    def _checkNumberOnly(self, action, value_if_allowed):
+        if action != '1':
+           return True
+        try:
+            return value_if_allowed.replace('.','',1).isdigit()
+        except ValueError:
+           return False
+
+    def setCurrentFocusElement(self, element, valvar):
+        element.select_range(0, len(valvar.get()))
+        self.currentVar = valvar
+
     def calibrate(self):
         calculated = (self.currentRaw - self.currentTear)
-        print(calculated)
-        self.currentCalibration = 500/calculated
-        print(self.currentCalibration)
-        self.settings.setValue("calibration", self.currentCalibration)
-        self.settings.save()
-        messagebox.showinfo("Notification", "Configurations Saved")
-    
+        raw = 0
+        self.isRunningCal = True
+        time.sleep(.1)
+        self.machine.startSensor()
+        time.sleep(1)
+        self.machine.stopSensor()
+        self.isRunningCal = False
+        results = self.machine.getRawReadings()
+        count = len(results[1])
+        for i in range(0, count):
+            raw = raw + (results[1][i] - self.currentTear)
+        calibrated = raw/count
+        messagebox.showinfo("Notification", "measured value = {:d} for {}g".format(int(calibrated), self.calibrationRunVar.get()))
+        f = open("calibration.csv", "a")
+        f.write("{},{}\r\n".format(self.calibrationRunVar.get(),int(calibrated)))
+        f.close()
+        
+
     def tear(self):
-        raw = self.currentRaw
-        self.currentTear = raw
+        raw = 0
+        self.isRunningCal = True
+        time.sleep(.1)
+        self.machine.startSensor()
+        time.sleep(1)
+        self.machine.stopSensor()
+        self.isRunningCal = False
+        results = self.machine.getRawReadings()
+        count = len(results[1])
+        for i in range(0, count):
+            raw = raw + results[1][i]
+        self.currentTear = raw/count
         self.settings.setValue("tear",raw)
+        self.calibrate500btn.configure(state='normal')
 
     def runCheckLoop(self):
         while (self.isActive):
-
-            self.currentRaw  = self.machine.takeSingleMeasurement() 
-            calculated = (self.currentRaw - self.currentTear) * self.currentCalibration
-            self.CurrentRawMeasurement.set ("Raw: {0:d}".format(int(self.currentRaw - self.currentTear)) + " steps")
-            self.currentMeasurement.set ("Measured : {:10.1f}".format(calculated) + " g")
-            self.currentLocationLbl.update()
-            time.sleep(.1)
+            if(not self.isRunningCal):
+                self.currentRaw  = self.machine.takeSingleMeasurement() 
+                calculated = (self.currentRaw - self.currentTear) * self.currentCalibration
+                self.CurrentRawMeasurement.set ("Raw: {0:d}".format(int(self.currentRaw - self.currentTear)) + " steps")
+                self.currentMeasurement.set ("Measured : {:10.1f}".format(calculated) + " g")
+                self.currentLocationLbl.update()
+                time.sleep(.1)
 
     def syncTab(self,active):
         if(active):
             self.isActive = True
+            self.isRunningCal = False
             x = threading.Thread(target=lambda: self.runCheckLoop())
             x.start()
         else:
             self.isActive = False
+            self.isRunningCal = False
 
     def disable(self):
         self.isActive = False

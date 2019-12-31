@@ -109,6 +109,15 @@ class ClearPathMotorSD(object):
 
     def AxisLocation(self) -> "double":
         return _Devices.ClearPathMotorSD_AxisLocation(self)
+
+    def clearData(self) -> "void":
+        return _Devices.ClearPathMotorSD_clearData(self)
+
+    def LocationAt(self, arg2: "long") -> "double":
+        return _Devices.ClearPathMotorSD_LocationAt(self, arg2)
+
+    def TimeOfLocation(self, arg2: "long") -> "long":
+        return _Devices.ClearPathMotorSD_TimeOfLocation(self, arg2)
     PinA = property(_Devices.ClearPathMotorSD_PinA_get, _Devices.ClearPathMotorSD_PinA_set)
     PinB = property(_Devices.ClearPathMotorSD_PinB_get, _Devices.ClearPathMotorSD_PinB_set)
     PinE = property(_Devices.ClearPathMotorSD_PinE_get, _Devices.ClearPathMotorSD_PinE_set)

@@ -101,6 +101,9 @@ class ClearPathMotorSD
   bool commandDone();
   void disable();
   double AxisLocation();
+  void clearData();
+  double LocationAt(long);
+  long TimeOfLocation(long);
   
 
   
@@ -115,12 +118,16 @@ class ClearPathMotorSD
   uint8_t DirForwardPinLevel;
 
 
+
   private:
   void processMovement();
   volatile long CommandX;
   bool _direction;
   uint8_t _BurstX;
-  std::thread motorActivity;
+  std::thread motorActivity; 
+  long bufferSize = 100000;
+  long pulseLocations[100000];
+  long pulseTime[100000];
 
 // All of the position, velocity and acceleration parameters are signed and in Q24.8,
 // with all arithmetic performed in fixed point.
@@ -136,7 +143,8 @@ class ClearPathMotorSD
  float _Td;				// decelleration time
  float _Ts;        // Time at steady state
  float _Vp;				// pulses at steady state
- int pulseWidth;
+ int pulseWidth;  
+
 
 
 };

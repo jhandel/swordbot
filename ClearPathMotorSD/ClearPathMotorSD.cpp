@@ -128,6 +128,7 @@ void ClearPathMotorSD::stopMove()
 bool ClearPathMotorSD::moveInMM(double dist, int speed)
 {
 	stopMove();
+	clearData();
 	_TX=1;
 	std::cout << "Steps/1mm:" <<(StepsPer100mm/100) << std::endl;
 	CommandX = (fabs(dist) * (StepsPer100mm/100));
@@ -171,6 +172,9 @@ bool ClearPathMotorSD::moveInMM(double dist, int speed)
 
 void ClearPathMotorSD::processMovement(){
 	
+
+    auto start = std::chrono::high_resolution_clock::now();
+	long commandCount = 0;
 	while(CommandX > 0){
 		int pw = 10000;
 		//std::cout << "current time:"<< _TX << std::endl;
@@ -192,12 +196,17 @@ void ClearPathMotorSD::processMovement(){
 		DEV_Delay_us(pw - 2);
 		_TX = _TX + (pw);
 		CommandX --;
+		commandCount++;
 		if(!_direction)
 		{
-			PulseLocation++;
+			PulseLocation++;			
 		}else{
 			PulseLocation--;
 		}
+
+		auto elapsed = std::chrono::high_resolution_clock::now() - start;
+        pulseTime[commandCount] = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+        pulseLocations[commandCount] = PulseLocation;
 	}
 }
 
@@ -205,6 +214,31 @@ double ClearPathMotorSD::AxisLocation(){
 	double location = (double)PulseLocation/StepsPer100mm * 100;
 	double specificLoc = floor(location*10000)/10000;
 	return specificLoc;
+}
+
+void ClearPathMotorSD::clearData()
+{
+    std::fill_n(pulseLocations, bufferSize, 0);
+    std::fill_n(pulseTime, bufferSize, 0);
+}
+
+double ClearPathMotorSD::LocationAt(long index)
+{
+    if(index < bufferSize){
+        long locationStep = pulseLocations[index];
+		double location = (double)locationStep/StepsPer100mm * 100;
+		double specificLoc = floor(location*10000)/10000;
+		return specificLoc;
+    }
+    return 0;
+}
+long ClearPathMotorSD::TimeOfLocation(long index)
+{
+    if(index < bufferSize){
+        long step =  pulseTime[index];
+		return step;
+    }
+    return 0;
 }
 
 /*		

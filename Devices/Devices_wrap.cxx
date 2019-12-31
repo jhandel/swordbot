@@ -4131,6 +4131,100 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_clearData(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_clearData" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    (arg1)->clearData();
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_LocationAt(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  double result;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ClearPathMotorSD_LocationAt", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_LocationAt" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  ecode2 = SWIG_AsVal_long(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_LocationAt" "', argument " "2"" of type '" "long""'");
+  } 
+  arg2 = static_cast< long >(val2);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (double)(arg1)->LocationAt(arg2);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_From_double(static_cast< double >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_TimeOfLocation(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  long arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  long val2 ;
+  int ecode2 = 0 ;
+  PyObject *swig_obj[2] ;
+  long result;
+  
+  if (!SWIG_Python_UnpackTuple(args, "ClearPathMotorSD_TimeOfLocation", 2, 2, swig_obj)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_TimeOfLocation" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  ecode2 = SWIG_AsVal_long(swig_obj[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ClearPathMotorSD_TimeOfLocation" "', argument " "2"" of type '" "long""'");
+  } 
+  arg2 = static_cast< long >(val2);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (long)(arg1)->TimeOfLocation(arg2);
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_From_long(static_cast< long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_ClearPathMotorSD_PinA_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
@@ -6172,6 +6266,9 @@ static PyMethodDef SwigMethods[] = {
 	 { "ClearPathMotorSD_commandDone", _wrap_ClearPathMotorSD_commandDone, METH_O, NULL},
 	 { "ClearPathMotorSD_disable", _wrap_ClearPathMotorSD_disable, METH_O, NULL},
 	 { "ClearPathMotorSD_AxisLocation", _wrap_ClearPathMotorSD_AxisLocation, METH_O, NULL},
+	 { "ClearPathMotorSD_clearData", _wrap_ClearPathMotorSD_clearData, METH_O, NULL},
+	 { "ClearPathMotorSD_LocationAt", _wrap_ClearPathMotorSD_LocationAt, METH_VARARGS, NULL},
+	 { "ClearPathMotorSD_TimeOfLocation", _wrap_ClearPathMotorSD_TimeOfLocation, METH_VARARGS, NULL},
 	 { "ClearPathMotorSD_PinA_set", _wrap_ClearPathMotorSD_PinA_set, METH_VARARGS, NULL},
 	 { "ClearPathMotorSD_PinA_get", _wrap_ClearPathMotorSD_PinA_get, METH_O, NULL},
 	 { "ClearPathMotorSD_PinB_set", _wrap_ClearPathMotorSD_PinB_set, METH_VARARGS, NULL},

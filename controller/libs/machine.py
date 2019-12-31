@@ -1,4 +1,3 @@
-
 from libs.Devices import ClearPathMotorSD
 from libs.Devices import LoadSensor
 from libs.Devices import Switch
@@ -64,15 +63,26 @@ class Machine():
         else:
             self.Sensor.SetMode(0)
 
+    def getRawReadings(self):
+        count = self.Sensor.CurrentRead
+        results = [[],[]]
+        for x in range(1, count):
+            results[0].append(self.Sensor.TimeOfReading(x))
+            results[1].append((self.Sensor.ReadingAt(x)))
+        return results
+        
     def getReadings(self):
         count = self.Sensor.CurrentRead
         tear = self.Settings.getValue("tear")
         calibration = self.Settings.getValue("calibration")
-        results = [[],[]]
+        results = [[],[],[],[],[]]
         for x in range(1, count):
             results[0].append(self.Sensor.TimeOfReading(x))
+            results[1].append((self.Sensor.ReadingAt(x) -tear))
             value = round((self.Sensor.ReadingAt(x) -tear) * calibration,1)
-            results[1].append(value)
+            results[2].append(value)
+            results[3].append(self.Motor.TimeOfLocation(x))
+            results[4].append(self.Motor.LocationAt(x))
         return results
     
     def enable(self):
