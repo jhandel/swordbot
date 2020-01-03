@@ -194,6 +194,7 @@ void ClearPathMotorSD::processMovement(){
 		DEV_Delay_us(2);
 		DEV_Digital_Write(PinB,LOW);
 		DEV_Delay_us(pw - 2);
+		//std::cout << "pulse width:"<< pw < std::endl;
 		_TX = _TX + (pw);
 		CommandX --;
 		commandCount++;

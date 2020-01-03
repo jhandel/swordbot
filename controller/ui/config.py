@@ -204,5 +204,6 @@ class ConfigFrame(ttk.Frame):
             time.sleep(.1)
             homed = self.machine.Motor.commandDone()
         self.machine.stopSwitch()
+        self.machine.moveTo(10,int(self.settings.getValue("homeSpeed")))
         self.machine.Motor.PulseLocation = 0
         self.settings.setValue("homed",True)
