@@ -87,8 +87,9 @@ class TestFrame(ttk.Frame):
             finished = self.machine.Motor.commandDone()
         time.sleep(.25)
         self.machine.stopSensor()
-        results = self.machine.getReadings()
-        self.axis.plot(results[0], results[2], lw=2)
+        forceresults = self.machine.getForceReadings()
+        moveresults = self.machine.getMovementReadings()
+        self.axis.plot(forceresults[0], forceresults[1], lw=2)
         self.canvas.draw()
         self.canvas.flush_events()
         self.canvas.draw()
@@ -103,11 +104,12 @@ class TestFrame(ttk.Frame):
         f.write('\r\n')
         f.write('\r\n')
         f.write('\r\n')
-        f.write('microsecond,rawmeasurement,calcmeasurement\r\n')
-        count = len(results[0])
+        f.write('microsecond,rawmeasurement\r\n')
+        count = len(forceresults[0])
         for i in range(0, count):
-            f.write(str(results[0][i]) + "," + str(results[1][i]) + "," + str(results[2][i]) +'\r\n')
+            f.write(str(forceresults[0][i]) + "," + str(forceresults[1][i]) + '\r\n')
         f.close()
+
         f = open("run-movement-log-" + str(runNum) + ".csv", "a")
         f.write('run,speed,distance,penetration,acceleration\r\n')
         f.write(str(runNum)+ ','+ str(thrustspeed) +','+ str(thrustmove) +','+ str(penetration) +','+ str(acceleration) +'\r\n')
@@ -115,9 +117,9 @@ class TestFrame(ttk.Frame):
         f.write('\r\n')
         f.write('\r\n')
         f.write('microsecond,location\r\n')
-        count = len(results[0])
+        count = len(moveresults[0])
         for i in range(0, count):
-            f.write(str(results[3][i]) + "," + str(results[4][i]) + '\r\n')
+            f.write(str(moveresults[0][i]) + "," + str(moveresults[1][i]) + '\r\n')
         f.close()
 
 
@@ -129,5 +131,10 @@ class TestFrame(ttk.Frame):
             time.sleep(.1)
             homed = self.machine.Motor.commandDone()
         self.machine.stopSwitch()
+        self.machine.moveTo(5,int(self.settings.getValue("homeSpeed")))
+        homed = False
+        while(not homed):
+            time.sleep(.1)
+            homed = self.machine.Motor.commandDone()
         self.machine.Motor.PulseLocation = 0
         self.settings.setValue("homed",True)

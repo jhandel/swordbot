@@ -90,8 +90,8 @@ class CalibrationFrame(ttk.Frame):
         count = len(results[1])
         for i in range(0, count):
             raw = raw + results[1][i]
-        self.currentTear = raw/count
-        self.settings.setValue("tear",raw)
+        self.currentTear = int(raw/count)
+        self.settings.setValue("tear",self.currentTear)
         self.calibrate500btn.configure(state='normal')
 
     def runCheckLoop(self):

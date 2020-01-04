@@ -113,7 +113,10 @@ class ClearPathMotorSD(object):
     def clearData(self) -> "void":
         return _Devices.ClearPathMotorSD_clearData(self)
 
-    def LocationAt(self, arg2: "long") -> "double":
+    def GetLoggedPulseCount(self) -> "long":
+        return _Devices.ClearPathMotorSD_GetLoggedPulseCount(self)
+
+    def LocationAt(self, arg2: "long") -> "long":
         return _Devices.ClearPathMotorSD_LocationAt(self, arg2)
 
     def TimeOfLocation(self, arg2: "long") -> "long":

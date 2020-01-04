@@ -4157,6 +4157,33 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_ClearPathMotorSD_GetLoggedPulseCount(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject *swig_obj[1] ;
+  long result;
+  
+  if (!args) SWIG_fail;
+  swig_obj[0] = args;
+  res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ClearPathMotorSD_GetLoggedPulseCount" "', argument " "1"" of type '" "ClearPathMotorSD *""'"); 
+  }
+  arg1 = reinterpret_cast< ClearPathMotorSD * >(argp1);
+  {
+    SWIG_PYTHON_THREAD_BEGIN_ALLOW;
+    result = (long)(arg1)->GetLoggedPulseCount();
+    SWIG_PYTHON_THREAD_END_ALLOW;
+  }
+  resultobj = SWIG_From_long(static_cast< long >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_ClearPathMotorSD_LocationAt(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   ClearPathMotorSD *arg1 = (ClearPathMotorSD *) 0 ;
@@ -4166,7 +4193,7 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_LocationAt(PyObject *SWIGUNUSEDPARM(
   long val2 ;
   int ecode2 = 0 ;
   PyObject *swig_obj[2] ;
-  double result;
+  long result;
   
   if (!SWIG_Python_UnpackTuple(args, "ClearPathMotorSD_LocationAt", 2, 2, swig_obj)) SWIG_fail;
   res1 = SWIG_ConvertPtr(swig_obj[0], &argp1,SWIGTYPE_p_ClearPathMotorSD, 0 |  0 );
@@ -4181,10 +4208,10 @@ SWIGINTERN PyObject *_wrap_ClearPathMotorSD_LocationAt(PyObject *SWIGUNUSEDPARM(
   arg2 = static_cast< long >(val2);
   {
     SWIG_PYTHON_THREAD_BEGIN_ALLOW;
-    result = (double)(arg1)->LocationAt(arg2);
+    result = (long)(arg1)->LocationAt(arg2);
     SWIG_PYTHON_THREAD_END_ALLOW;
   }
-  resultobj = SWIG_From_double(static_cast< double >(result));
+  resultobj = SWIG_From_long(static_cast< long >(result));
   return resultobj;
 fail:
   return NULL;
@@ -6267,6 +6294,7 @@ static PyMethodDef SwigMethods[] = {
 	 { "ClearPathMotorSD_disable", _wrap_ClearPathMotorSD_disable, METH_O, NULL},
 	 { "ClearPathMotorSD_AxisLocation", _wrap_ClearPathMotorSD_AxisLocation, METH_O, NULL},
 	 { "ClearPathMotorSD_clearData", _wrap_ClearPathMotorSD_clearData, METH_O, NULL},
+	 { "ClearPathMotorSD_GetLoggedPulseCount", _wrap_ClearPathMotorSD_GetLoggedPulseCount, METH_O, NULL},
 	 { "ClearPathMotorSD_LocationAt", _wrap_ClearPathMotorSD_LocationAt, METH_VARARGS, NULL},
 	 { "ClearPathMotorSD_TimeOfLocation", _wrap_ClearPathMotorSD_TimeOfLocation, METH_VARARGS, NULL},
 	 { "ClearPathMotorSD_PinA_set", _wrap_ClearPathMotorSD_PinA_set, METH_VARARGS, NULL},

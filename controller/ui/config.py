@@ -153,7 +153,7 @@ class ConfigFrame(ttk.Frame):
         try:
             return value_if_allowed.replace('.','',1).isdigit()
         except ValueError:
-           return false
+           return False
 
     def setCurrentFocusElement(self, element, valvar):
         element.select_range(0, len(valvar.get()))
@@ -204,6 +204,10 @@ class ConfigFrame(ttk.Frame):
             time.sleep(.1)
             homed = self.machine.Motor.commandDone()
         self.machine.stopSwitch()
-        self.machine.moveTo(10,int(self.settings.getValue("homeSpeed")))
+        self.machine.moveTo(5,int(self.settings.getValue("homeSpeed")))
+        homed = False
+        while(not homed):
+            time.sleep(.1)
+            homed = self.machine.Motor.commandDone()
         self.machine.Motor.PulseLocation = 0
         self.settings.setValue("homed",True)

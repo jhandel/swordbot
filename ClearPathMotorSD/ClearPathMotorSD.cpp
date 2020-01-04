@@ -204,10 +204,10 @@ void ClearPathMotorSD::processMovement(){
 		}else{
 			PulseLocation--;
 		}
-
 		auto elapsed = std::chrono::high_resolution_clock::now() - start;
         pulseTime[commandCount] = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
         pulseLocations[commandCount] = PulseLocation;
+		pulseCount++;
 	}
 }
 
@@ -221,15 +221,19 @@ void ClearPathMotorSD::clearData()
 {
     std::fill_n(pulseLocations, bufferSize, 0);
     std::fill_n(pulseTime, bufferSize, 0);
+	pulseCount = 0;
 }
 
-double ClearPathMotorSD::LocationAt(long index)
+long ClearPathMotorSD::GetLoggedPulseCount()
+{
+	return pulseCount;
+}
+
+long ClearPathMotorSD::LocationAt(long index)
 {
     if(index < bufferSize){
         long locationStep = pulseLocations[index];
-		double location = (double)locationStep/StepsPer100mm * 100;
-		double specificLoc = floor(location*10000)/10000;
-		return specificLoc;
+		return locationStep;
     }
     return 0;
 }

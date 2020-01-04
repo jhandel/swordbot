@@ -102,7 +102,8 @@ class ClearPathMotorSD
   void disable();
   double AxisLocation();
   void clearData();
-  double LocationAt(long);
+  long GetLoggedPulseCount();
+  long LocationAt(long);
   long TimeOfLocation(long);
   
 
@@ -128,6 +129,7 @@ class ClearPathMotorSD
   long bufferSize = 100000;
   long pulseLocations[100000];
   long pulseTime[100000];
+  long pulseCount = 0;
 
 // All of the position, velocity and acceleration parameters are signed and in Q24.8,
 // with all arithmetic performed in fixed point.

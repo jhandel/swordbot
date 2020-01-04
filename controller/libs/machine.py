@@ -70,19 +70,22 @@ class Machine():
             results[0].append(self.Sensor.TimeOfReading(x))
             results[1].append((self.Sensor.ReadingAt(x)))
         return results
-        
-    def getReadings(self):
+
+    def getMovementReadings(self):
+        count = self.Motor.GetLoggedPulseCount()
+        results = [[],[]]
+        for x in range(1, count):
+            results[0].append(self.Motor.TimeOfLocation(x))
+            results[1].append(self.Motor.LocationAt(x))
+        return results
+
+    def getForceReadings(self):
         count = self.Sensor.CurrentRead
         tear = self.Settings.getValue("tear")
-        calibration = self.Settings.getValue("calibration")
-        results = [[],[],[],[],[]]
+        results = [[],[]]
         for x in range(1, count):
             results[0].append(self.Sensor.TimeOfReading(x))
-            results[1].append((self.Sensor.ReadingAt(x) -tear))
-            value = round((self.Sensor.ReadingAt(x) -tear) * calibration,1)
-            results[2].append(value)
-            results[3].append(self.Motor.TimeOfLocation(x))
-            results[4].append(self.Motor.LocationAt(x))
+            results[1].append((self.Sensor.ReadingAt(x) - tear))
         return results
     
     def enable(self):
