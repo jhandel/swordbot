@@ -19,22 +19,19 @@ class CalibrationFrame(ttk.Frame):
         self.currentCalibration = self.settings.getValue("calibration")
         self.currentTear = self.settings.getValue("tear")
         self.currentRaw = 0
-        self.currentMeasurement = tk.StringVar(master, "Measured : {:10.4f}".format(0) + " g")
+        self.currentMeasurement = tk.StringVar(master, "Measured : {:10.4f}".format(0) + " N")
         self.currentLocationLbl  = ttk.Label(self, textvariable=self.currentMeasurement, font=('Helvetica', 17),  anchor=tk.CENTER)
         self.currentLocationLbl.grid(row=0,column=0, columnspan=3, sticky="nsew")
 
-        self.CurrentRawMeasurement = tk.StringVar(master, "Raw : {:10.4f}".format(0) + " g")
+        self.CurrentRawMeasurement = tk.StringVar(master, "Raw : {:10.4f}".format(0) + " steps")
         self.currentRawLocationLbl  = ttk.Label(self, textvariable=self.CurrentRawMeasurement, font=('Helvetica', 17),  anchor=tk.CENTER)
         self.currentRawLocationLbl.grid(row=2,column=0, columnspan=3, sticky="nsew")
         self.isActive = False
 
-        self.TearBtn = ttk.Button(self, text="Tear",command=self.tear)
-        self.TearBtn.grid(row=3, column=0, columnspan=3, sticky="nsew")
-
         self.isRunningCal = False
         self.vcmd = (self.register(self._checkNumberOnly), '%d', '%P')
 
-        self.calibrationRunLabel = ttk.Label(self, text="Calibration weight",  anchor=tk.E)
+        self.calibrationRunLabel = ttk.Label(self, text="Calibration weight (g):",  anchor=tk.E)
         self.calibrationRunLabel.grid(row=4, column=0,sticky="e")
         self.calibrationRunVar = tk.StringVar()
         self.calibrationRunVar.set(0)
@@ -97,9 +94,9 @@ class CalibrationFrame(ttk.Frame):
         while (self.isActive):
             if(not self.isRunningCal):
                 self.currentRaw  = self.machine.takeSingleMeasurement() 
-                calculated = (self.currentRaw - self.currentTear) * self.currentCalibration
+                calculated = self.settings.getMeasurement(self.currentRaw)
                 self.CurrentRawMeasurement.set ("Raw: {0:d}".format(int(self.currentRaw - self.currentTear)) + " steps")
-                self.currentMeasurement.set ("Measured : {:10.1f}".format(calculated) + " g")
+                self.currentMeasurement.set ("Measured : {:10.1f}".format(calculated) + " N")
                 self.currentLocationLbl.update()
                 time.sleep(.1)
 
