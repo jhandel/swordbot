@@ -59,7 +59,20 @@ class Settings():
                 remainingMeasure = remainingSteps/measureSteps
                 returnval = returnvalStart + remainingMeasure
                 break
+        return returnval
 
+    def getRawCount(self,measurement):
+        count = len(self.calibration)
+        returnval = self.calibration[1]
+        for x in range(1, count):
+            measurePool = self.calibration[x]
+            if(measurePool[0] > measurement):
+                measureSteps = measurePool[3]
+                startingSteps = self.calibration[x-1][1]
+                remainingmeasurement = measurement - self.calibration[x-1][0]
+                remainingsteps = remainingmeasurement*measureSteps
+                returnval = startingSteps + remainingsteps
+                break
         return returnval
 
 
