@@ -118,6 +118,80 @@ void LoadSensor::processReads(){
     DEV_Digital_Write(DEV_CS_PIN, 1);
 }
 
+
+void LoadSensor::startMonitor(uint8_t channel, double target, LoadSensorCallback *cballback){
+	 delete _callback;
+	 _callback = 0;
+	 _callback = cballback;
+	 monitoring = true;
+     targetForce = target;
+     Channel = channel;
+
+    if(ScanMode == 0){// 0  Single-ended input  8 channel1 Differential input  4 channe 
+        if(Channel>=8){
+            return;
+        }
+        ADS1256_SetChannal(Channel);
+    }
+    else{
+        if(Channel>=4){
+            return;
+        }
+        ADS1256_SetDiffChannal(Channel);
+        printf("differental reading\r\n");
+    }
+    ADS1256_WriteCmd(CMD_SYNC);
+    DEV_Delay_us(10);
+    ADS1256_WriteCmd(CMD_WAKEUP);
+    DEV_Delay_us(10);
+    ADS1256_WaitDRDY();
+    
+    DEV_Digital_Write(DEV_CS_PIN, 0);
+    DEV_Delay_us(8);
+    DEV_SPI_WriteByte(CMD_RDATAC);       
+
+
+     if(loadSensorThread.joinable()) loadSensorThread.join();
+	 loadSensorThread = std::thread([=]() {
+	 	printf("thread started\r\n");
+        this->monitorForce();
+    });
+ }
+ void LoadSensor::monitorForce(){
+    UBYTE buf[3] = {0,0,0};
+    CurrentRead = 0;
+    while(monitoring){
+        ADS1256_WaitDRDY();
+        DEV_Delay_us(7);
+        buf[0] = DEV_SPI_ReadByte();
+        DEV_Delay_us(3);
+        buf[1] = DEV_SPI_ReadByte();
+        DEV_Delay_us(3);
+        buf[2] = DEV_SPI_ReadByte();
+        UDOUBLE read = ((UDOUBLE)buf[0] << 16) & 0x00FF0000;
+        read |= ((UDOUBLE)buf[1] << 8);  /* Pay attention to It is wrong   read |= (buf[1] << 8) */
+        read |= buf[2];
+        if (read & 0x800000)
+            read |= 0xFF000000;
+        if(read >= targetForce){	
+			if (_callback) {
+				_callback->run();
+			}
+		}
+        while(DEV_Digital_Read(DEV_DRDY_PIN) == 0);// you have to wait for the bit to rise or you can double read
+    }
+    DEV_SPI_WriteByte(CMD_SDATAC);
+    DEV_Digital_Write(DEV_CS_PIN, 1);			
+	printf("thread completed\r\n");
+ }
+ void LoadSensor::stopMonitor()
+  {
+	delete _callback;
+	_callback = 0;
+    monitoring = false;
+    if(loadSensorThread.joinable()) loadSensorThread.join();
+  };
+
 void LoadSensor::SetMode(uint8_t mode){
     ADS1256_SetMode(mode);
     ScanMode = mode;

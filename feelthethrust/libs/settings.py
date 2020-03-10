@@ -48,7 +48,9 @@ class Settings():
             return float(val)
 
     def getMeasurement(self,rawValue):
+        print(rawValue)
         count = len(self.calibration)
+        print(count)
         returnval = 0
         for x in range(1, count):
             measurePool = self.calibration[x]
@@ -61,7 +63,7 @@ class Settings():
                 break
         return returnval
 
-    def getRawCount(self,measurement):
+    def getRawForceSteps(self,measurement):
         count = len(self.calibration)
         returnval = self.calibration[1]
         for x in range(1, count):

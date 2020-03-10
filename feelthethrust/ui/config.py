@@ -123,7 +123,7 @@ class ConfigFrame(ttk.Frame):
         self.jogSpeedEntry.bind('<FocusIn>', lambda event: self.setCurrentFocusElement(self.jogSpeedEntry, self.jogSpeedVar))
 
         self.numPadFrame = ttk.Frame(self)
-        self.numPadFrame.grid(row=1, column=3, rowspan=13, sticky="nsew")
+        self.numPadFrame.grid(row=1, column=3, rowspan=12, sticky="nsew")
         
         self.num7Btn = ttk.Button(self.numPadFrame, text="7",command=lambda: self.numPadCallback(7))
         self.num7Btn.grid(row=0, column=0, sticky="nsew")
@@ -198,6 +198,8 @@ class ConfigFrame(ttk.Frame):
         self.settings.setValue("maxDistance",self.limitVar.get())
         self.settings.setValue("acceleration",self.accelVar.get())
         self.settings.setValue("stepsPer100MM",self.stepsVar.get())
+        self.settings.setValue("baselineForce", self.baselineForceVar.get())
+        self.settings.setValue("targetForce", self.targetForceVar.get())
         self.settings.save()
         self.machine.updateSettings()
         messagebox.showinfo("Notification", "Configurations Saved")
@@ -212,6 +214,8 @@ class ConfigFrame(ttk.Frame):
         self.limitVar.set(self.settings.getValue("maxDistance"))
         self.accelVar.set(self.settings.getValue("acceleration"))
         self.stepsVar.set(self.settings.getValue("stepsPer100MM"))
+        self.baselineForceVar.set(self.settings.getValue("baselineForce"))
+        self.targetForceVar.set(self.settings.getValue("targetForce"))
 
     def homeMachine(self):
         homed = False

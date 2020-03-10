@@ -25,7 +25,7 @@ class Machine():
         self.Switch = switch
         self.Settings = settings
         self.updateSettings()
-        self.Sensor.setGainAndRate(cspace.ADS1256_7500SPS, cspace.ADS1256_GAIN_1)
+        self.Sensor.setGainAndRate(cspace.ADS1256_2000SPS, cspace.ADS1256_GAIN_1)
         self.setSignalMode("single")
 
     def updateSettings(self):
@@ -41,11 +41,18 @@ class Machine():
         switchCallback = LimitHandler(action).__disown__()
         self.Switch.startMonitor(21,False,100,switchCallback)
 
+    def watchForce(self, action, target):
+        loadSensorCallback = LimitHandler(action).__disown__()
+        self.Sensor.startMonitor(0,target,loadSensorCallback)
+
     def stopMove(self):
         self.Motor.stopMove()
 
     def stopSwitch(self):
         self.Switch.stopMonitor()
+    
+    def stopForceWatch(self):
+        self.Sensor.stopMonitor()
     
     def startSensor(self):
         self.Sensor.startRead(100000,0)

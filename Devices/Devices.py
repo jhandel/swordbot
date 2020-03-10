@@ -134,6 +134,20 @@ class ClearPathMotorSD(object):
 # Register ClearPathMotorSD in _Devices:
 _Devices.ClearPathMotorSD_swigregister(ClearPathMotorSD)
 
+class LoadSensorCallback(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+    __swig_destroy__ = _Devices.delete_LoadSensorCallback
+
+    def run(self) -> "void":
+        return _Devices.LoadSensorCallback_run(self)
+
+    def __init__(self):
+        _Devices.LoadSensorCallback_swiginit(self, _Devices.new_LoadSensorCallback())
+
+# Register LoadSensorCallback in _Devices:
+_Devices.LoadSensorCallback_swigregister(LoadSensorCallback)
+
 class LoadSensor(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -141,6 +155,12 @@ class LoadSensor(object):
     def __init__(self):
         _Devices.LoadSensor_swiginit(self, _Devices.new_LoadSensor())
     __swig_destroy__ = _Devices.delete_LoadSensor
+
+    def startMonitor(self, channel: "uint8_t", target: "double", cballback: "LoadSensorCallback") -> "void":
+        return _Devices.LoadSensor_startMonitor(self, channel, target, cballback)
+
+    def stopMonitor(self) -> "void":
+        return _Devices.LoadSensor_stopMonitor(self)
 
     def setGainAndRate(self, arg2: "ADS1256_DRATE", arg3: "ADS1256_GAIN") -> "void":
         return _Devices.LoadSensor_setGainAndRate(self, arg2, arg3)

@@ -11,6 +11,8 @@ matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import time
+from tkinter.scrolledtext import ScrolledText
+from tkinter import END
 
 class TestFrame(ttk.Frame):
     def __init__(self,master, settings, machine):
@@ -18,53 +20,46 @@ class TestFrame(ttk.Frame):
         self.machine = machine
         self.master = master
         ttk.Frame.__init__(self, master, width = 780, height = 400)
-        self.columnconfigure(1, weight=1)
-        self.columnconfigure(0, weight=0)
         self.rowconfigure(0, weight=0)
         self.grid(row=0,column=0, sticky="nsew")
-        self.runLabel = ttk.Label(self, text="Run Program:", font=('Helvetica', 16) , width="20", anchor=tk.E )
-        self.runBtn = ttk.Button(self, text="Stab", command=self.runTest)
-        self.runLabel.grid(row=0, column=0,sticky="e")
-        self.runBtn.grid(row=0, column=1,sticky="w")
-        self.runNumVar = tk.StringVar()
-        self.runNumberLabel = ttk.Label(self, textvariable=self.runNumVar, font=('Helvetica', 16), width="20", anchor=tk.E )
-        self.runNumberLabel.grid(row=0, column=2,sticky="e")
+        self.runBtnShirt = ttk.Button(self, text="Shirt (6N)", command=self.runShirtTest)
+        self.runBtnShirt.grid(row=0, column=1,sticky="w")
+        self.runBtnSilk = ttk.Button(self, text="Silk (47N)", command=self.runSilkTest)
+        self.runBtnSilk.grid(row=0, column=2,sticky="w")
+        self.runBtnLeather = ttk.Button(self, text="Leather (55N)", command=self.runLeatherTest)
+        self.runBtnLeather.grid(row=0, column=3,sticky="w")
+        self.runBtnLinen = ttk.Button(self, text="Linen (62N)", command=self.runLinenTest)
+        self.runBtnLinen.grid(row=0, column=4,sticky="w")
 
+        self.runBtnTarget = ttk.Button(self, text="Target", command=self.runTargetTest)
+        self.runBtnTarget.grid(row=0, column=5,sticky="w")
 
-        self.figure = Figure()
-        self.figure.set_figheight(3.7)
-        self.figure.set_figwidth(7.8)
-        self.axis = self.figure.add_subplot(111)
-        self.axis.plot([], [], lw=2)
-        self.canvas = FigureCanvasTkAgg(self.figure, self)
-        self.canvas.draw()
-        self.canvas.get_tk_widget().grid(row=1, column=0, columnspan=4, sticky="nsew")
-        self.clearGraphBtn = ttk.Button(self, text="Clear", command=self.clearResults)
-        self.clearGraphBtn.grid(row=0, column=3,sticky="e")
-
-    def clearResults(self):
-        self.axis.clear()
-        self.canvas.draw()
-        self.canvas.flush_events()
-        self.canvas.draw()
+        self.log = ScrolledText(self)
+        self.log.grid(row=1, column=0, columnspan=6, sticky="nsew")
 
     def syncTab(self, active):
-        if(not self.settings.getValue("homed")):
-            self.runBtn.configure(state='disable')
-        else:
-            self.runBtn.configure(state='normal')
+        print("testing")
 
-    def runTest(self):
-        runNum = int(self.settings.getValue("runNumber"))
-        runNum = runNum + 1
-        self.settings.setValue("runNumber",runNum)
-        self.settings.save()
-
-
-        self.runNumVar.set("Run Number: " + str(runNum))
-        self.runNumberLabel.update()
+    def runShirtTest(self):
+        self.runTest(6)
+    def runSilkTest(self):
+        self.runTest(47)
+    def runLeatherTest(self):
+        self.runTest(55)
+    def runLinenTest(self):
+        self.runTest(62)
+    def runTargetTest(self):
+        self.runTest(self.settings.getValue("targetForce"))
+    def runTest(self,targetForce):
+        self.moveHome()
         penetration = self.settings.getValue("targetPen")
         thrustmove = self.settings.getValue("targetZero") + penetration
+        baselineForce = self.settings.getValue("baselineForce")
+
+        totalTargetForce = targetForce + baselineForce
+
+        totalTargetForceSteps = self.settings.getRawForceSteps(totalTargetForce)
+
         if(thrustmove > self.settings.getValue("maxDistance")):
             return #if the thrust move is to far we quit
 
@@ -76,51 +71,30 @@ class TestFrame(ttk.Frame):
 
         retractmove = ( penetration * 2) * -1
 
-        #start reading
-        self.machine.startSensor()
-        #thrust at target
         self.machine.moveTo(thrustmove,int(thrustspeed))
+
+
+        #thrust at target
+        print(totalTargetForceSteps)
+        self.machine.moveTo(thrustmove,int(thrustspeed))
+        finished = False
+        time.sleep(.099)
+        while(not finished):
+            force = self.machine.takeSingleMeasurement() 
+            if(force >= totalTargetForceSteps):
+                self.machine.stopMove()
+                self.log.insert(END,"{}".format(force)+'\n')
+                calculated = self.settings.getMeasurement(force)
+                self.log.insert(END,"{}".format(calculated)+'\n')
+            finished = self.machine.Motor.commandDone()
+
+        self.machine.moveTo(retractmove,int(thrustspeed))
         finished = False
         while(not finished):
             time.sleep(.001)
             finished = self.machine.Motor.commandDone()
         time.sleep(.25)
-        self.machine.stopSensor()
-        forceresults = self.machine.getForceReadings()
-        moveresults = self.machine.getMovementReadings()
-        self.axis.plot(forceresults[0], forceresults[1], lw=2)
-        self.canvas.draw()
-        self.canvas.flush_events()
-        self.canvas.draw()
-        
         self.moveHome()
-
-        filenametime = time.time()
-        acceleration = int(self.settings.getValue("acceleration"))
-        f = open("run-measurements-" + str(runNum) + ".csv", "a")
-        f.write('run,speed,distance,penetration,acceleration\r\n')
-        f.write(str(runNum)+ ','+ str(thrustspeed) +','+ str(thrustmove) +','+ str(penetration) +','+ str(acceleration) +'\r\n')
-        f.write('\r\n')
-        f.write('\r\n')
-        f.write('\r\n')
-        f.write('microsecond,rawmeasurement\r\n')
-        count = len(forceresults[0])
-        for i in range(0, count):
-            f.write(str(forceresults[0][i]) + "," + str(forceresults[1][i]) + '\r\n')
-        f.close()
-
-        f = open("run-movement-log-" + str(runNum) + ".csv", "a")
-        f.write('run,speed,distance,penetration,acceleration\r\n')
-        f.write(str(runNum)+ ','+ str(thrustspeed) +','+ str(thrustmove) +','+ str(penetration) +','+ str(acceleration) +'\r\n')
-        f.write('\r\n')
-        f.write('\r\n')
-        f.write('\r\n')
-        f.write('microsecond,location\r\n')
-        count = len(moveresults[0])
-        for i in range(0, count):
-            f.write(str(moveresults[0][i]) + "," + str(moveresults[1][i]) + '\r\n')
-        f.close()
-
 
     def moveHome(self):
         homed = False
